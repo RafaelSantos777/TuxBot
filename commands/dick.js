@@ -15,7 +15,7 @@ export default {
 	},
 };
 
-function dickReply(userDisplayName, emojis) {
+function dickReply(userDisplayName) {
 
 	function randomDickSizeCentimeters() {
 		const base_size = Math.random() * BASE_DICK_SIZE_CENTIMETERS + Math.random() * BASE_DICK_SIZE_CENTIMETERS;

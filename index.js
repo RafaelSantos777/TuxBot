@@ -6,42 +6,34 @@ import { pathToFileURL } from 'url';
 
 dotenv.config();
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
-const { DISCORD_TOKEN, APPLICATION_ID } = process.env;
-const client = new Client({
-    intents:
-        [GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent]
-});
-const commandMap = new Map();
+const { APPLICATION_TOKEN, APPLICATION_ID } = process.env;
+const CLIENT_INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
+const client = new Client({ intents: CLIENT_INTENTS });
+const commands = new Map();
 
-async function createCommands() {
+async function setupCommands() {
     for (const fileName of fs.readdirSync(COMMAND_FOLDER_PATH)) {
         const fileURL = pathToFileURL(path.join(COMMAND_FOLDER_PATH, fileName));
         const command = (await import(fileURL)).default;
         if (!('data' in command) || typeof command.execute !== 'function')
-            throw new ConfigurationError(`${fileName} is not properly configured. Missing required "data" and/or "execute" exports.`);
-        commandMap.set(command.data.name, command);
+            throw new Error(`${fileName} is not properly configured.`);
+        commands.set(command.data.name, command);
     }
 }
 
 async function deployCommands() {
-    const rest = new REST().setToken(DISCORD_TOKEN);
-    try {
-        await rest.put(
-            Routes.applicationCommands(APPLICATION_ID),
-            { body: (Array.from(commandMap.values()).map(value => value.data)) },
-        );
-    } catch (error) {
-        console.error(error);
-    }
+    const rest = new REST().setToken(APPLICATION_TOKEN);
+    await rest.put(
+        Routes.applicationCommands(APPLICATION_ID),
+        { body: (Array.from(commands.values()).map(value => value.data)) },
+    );
 }
 
-async function setupClient() {
+function setupClient() {
     client.on(Events.InteractionCreate, async interaction => {
         if (!interaction.isChatInputCommand())
             return;
-        const command = commandMap.get(interaction.commandName);
+        const command = commands.get(interaction.commandName);
         if (!command)
             return;
         try {
@@ -54,13 +46,23 @@ async function setupClient() {
                 await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
         }
     });
-
 }
 
-await createCommands();
-await deployCommands();
-setupClient();
-client.login(DISCORD_TOKEN);
+async function main() {
+    try {
+        await setupCommands();
+        await deployCommands();
+        setupClient();
+        await client.login(APPLICATION_TOKEN);
+        console.log('Client logged in sucessfully.');
+    } catch (error) {
+        console.error(error);
+        process.exit(1);
+    }
+}
+
+main();
+
 
 
 
