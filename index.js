@@ -1,10 +1,9 @@
-import dotenv from 'dotenv';
-import { Client, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
+import dotenv from 'dotenv'; dotenv.config();
+import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import path from 'path';
 import fs from 'fs';
 import { pathToFileURL } from 'url';
 
-dotenv.config();
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
 const { APPLICATION_TOKEN, APPLICATION_ID } = process.env;
 const CLIENT_INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
@@ -15,7 +14,7 @@ async function setupCommands() {
     for (const fileName of fs.readdirSync(COMMAND_FOLDER_PATH)) {
         const fileURL = pathToFileURL(path.join(COMMAND_FOLDER_PATH, fileName));
         const command = (await import(fileURL)).default;
-        if (!('data' in command) || typeof command.execute !== 'function')
+        if (!command.data instanceof SlashCommandBuilder || !command.execute instanceof Function)
             throw new Error(`${fileName} is not properly configured.`);
         commands.set(command.data.name, command);
     }
@@ -54,7 +53,7 @@ async function main() {
         await deployCommands();
         setupClient();
         await client.login(APPLICATION_TOKEN);
-        console.log('Client logged in sucessfully.');
+        console.log('Client logged in successfully.');
     } catch (error) {
         console.error(error);
         process.exit(1);
