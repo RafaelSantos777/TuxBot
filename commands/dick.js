@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import BOT_EMOJIS from '../bot-emojis.js';
 
 const BASE_DICK_SIZE_CENTIMETERS = 13.75;
@@ -11,14 +11,17 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName('dick')
 		.setDescription('Measures your dick.'),
+	/**
+	* @param {ChatInputCommandInteraction} interaction
+	*/
 	async execute(interaction) {
-		await interaction.reply(`${dickReply(interaction.user.displayName)}`);
+		await interaction.reply(`${createDickReply(interaction.user.displayName)}`);
 	},
 };
 
-function dickReply(userDisplayName) {
+function createDickReply(userDisplayName) {
 
-	function randomDickSizeCentimeters() {
+	function generateRandomDickSizeCentimeters() {
 		const base_size = Math.random() * BASE_DICK_SIZE_CENTIMETERS + Math.random() * BASE_DICK_SIZE_CENTIMETERS;
 		const extra_size = Math.random() * MAX_EXTRA_DICK_SIZE_CENTIMETERS;
 		const multiplier = Math.random() < MULTIPLIER_CHANCE ? Math.pow(Math.random() * MAX_BASE_MULTIPLER, MULTIPLIER_EXPONENT) : 1;
@@ -26,18 +29,18 @@ function dickReply(userDisplayName) {
 		return final_size;
 	}
 
-	function dickSizeString() {
+	function formatSizeWithUnits() {
 		if (dickSizeCentimeters >= 100.0)
 			return `${(dickSizeCentimeters / 100).toFixed(2)} m`;
 		else
 			return `${dickSizeCentimeters} cm`;
 	}
 
-	function dickShape() {
+	function getDickShape() {
 		return `8${'='.repeat(dickSizeCentimeters / 2)}D`;
 	}
 
-	function replyEmoji() {
+	function getEmoji() {
 		if (dickSizeCentimeters >= 30)
 			return BOT_EMOJIS.MONKAW;
 		else if (dickSizeCentimeters >= 18)
@@ -48,8 +51,10 @@ function dickReply(userDisplayName) {
 			return BOT_EMOJIS.KEKW;
 		return '';
 	}
-	const dickSizeCentimeters = randomDickSizeCentimeters();
+
+	const dickSizeCentimeters = generateRandomDickSizeCentimeters();
 	const possessiveMarker = `${userDisplayName.toLowerCase().endsWith('s') ? '\'' : '\'s'}`;
-	return `${userDisplayName}${possessiveMarker} dick is **${dickSizeString()}** long. ${replyEmoji()}\n**${dickShape()}**`;
+	const emoji = getEmoji();
+	return `${userDisplayName}${possessiveMarker} dick is **${formatSizeWithUnits()}** long.${emoji ? ' ' : ''}${emoji}\n**${getDickShape()}**`;
 }
 

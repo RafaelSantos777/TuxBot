@@ -6,7 +6,7 @@ import { pathToFileURL } from 'url';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
 const { BOT_TOKEN, APPLICATION_ID } = process.env;
-const CLIENT_INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
+const CLIENT_INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.MessageContent]
 const client = new Client({ intents: CLIENT_INTENTS });
 const commands = new Map();
 
