@@ -1,11 +1,11 @@
-import dotenv from 'dotenv'; dotenv.config();
+import 'dotenv/config'
 import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import path from 'path';
 import fs from 'fs';
 import { pathToFileURL } from 'url';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
-const { APPLICATION_TOKEN, APPLICATION_ID } = process.env;
+const { BOT_TOKEN, APPLICATION_ID } = process.env;
 const CLIENT_INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 const client = new Client({ intents: CLIENT_INTENTS });
 const commands = new Map();
@@ -21,7 +21,7 @@ async function setupCommands() {
 }
 
 async function deployCommands() {
-    const rest = new REST().setToken(APPLICATION_TOKEN);
+    const rest = new REST().setToken(BOT_TOKEN);
     await rest.put(
         Routes.applicationCommands(APPLICATION_ID),
         { body: (Array.from(commands.values()).map(value => value.data)) },
@@ -52,7 +52,7 @@ async function main() {
         await setupCommands();
         await deployCommands();
         setupClient();
-        await client.login(APPLICATION_TOKEN);
+        await client.login(BOT_TOKEN);
         console.log('Client logged in successfully.');
     } catch (error) {
         console.error(error);
