@@ -1,5 +1,5 @@
 import { ChannelType, ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
-import { isInVoiceChannel, joinVoiceChannel } from '../voice-manager.js';
+import { getInteractionUserVoiceChannel, isInVoiceChannel, joinVoiceChannel } from '../voice-manager.js';
 
 export default {
 	data: new SlashCommandBuilder()
@@ -15,9 +15,9 @@ export default {
 	* @param {ChatInputCommandInteraction} interaction
 	*/
 	async execute(interaction) {
-		const guildMember = await interaction.guild.members.fetch(interaction.user.id);
+		const userVoiceChannel = await getInteractionUserVoiceChannel(interaction);
 		const selectedVoiceChannel = interaction.options.getChannel('channel');
-		const voiceChannel = selectedVoiceChannel ? selectedVoiceChannel : guildMember.voice.channel;
+		const voiceChannel = selectedVoiceChannel ? selectedVoiceChannel : userVoiceChannel;
 		if (voiceChannel === null) {
 			await interaction.reply('You must be in a voice channel or select one.');
 			return;

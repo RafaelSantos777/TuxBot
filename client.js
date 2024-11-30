@@ -3,7 +3,7 @@ import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } 
 import path from 'path';
 import fs from 'fs';
 import { pathToFileURL } from 'url';
-import { registerGuildAudioPlayer } from './voice-manager.js';
+import { addGuildAudioManager } from './voice-manager.js';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
 const { BOT_TOKEN, APPLICATION_ID } = process.env;
@@ -50,7 +50,7 @@ export function setupEventHandlers() {
                 await interaction.reply({ content: 'There was an unexpected error while executing this command!', ephemeral: true });
         }
     });
-    client.on(Events.GuildCreate, (guild) => { registerGuildAudioPlayer(guild.id); });
+    client.on(Events.GuildCreate, (guild) => { addGuildAudioManager(guild.id); });
 }
 
 export async function login() {

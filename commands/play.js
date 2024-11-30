@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
-import { enqueueAudio, joinVoiceChannel, playEnqueuedAudio } from '../voice-manager.js';
+import { getGuildAudioManager, getInteractionUserVoiceChannel, joinVoiceChannel } from '../voice-manager.js';
+import { getVoiceConnection } from '@discordjs/voice';
 import path from 'path';
 
 export default {
@@ -9,18 +10,29 @@ export default {
         .setContexts([InteractionContextType.Guild])
         .addStringOption((option) => option
             .setName('query')
-            .setDescription('Youtube URL.') // TODO change once it works
+            .setDescription('Youtube URL.') // TODO change once it works with more
             .setRequired(true)),
     /**
     * @param {ChatInputCommandInteraction} interaction
     */
     async execute(interaction) {
-        // TODO Make it join voice channels: 
-        // Either the bot or the user must be on the channel, if both are on a channel, joins the user channel
         const guildId = interaction.guildId;
-        const url = interaction.options.getString('query');
-        enqueueAudio(path.join(path.resolve(import.meta.dirname, '..'), `${url}`), guildId);
-        playEnqueuedAudio(guildId);
-        await interaction.reply(`Playing ${url}.`);
+        const voiceConnection = getVoiceConnection(guildId);
+        if (voiceConnection === undefined) {
+            const userVoiceChannel = await getInteractionUserVoiceChannel(interaction);
+            if (userVoiceChannel === null) {
+                await interaction.reply('Either you or I must be in a voice channel.');
+                return;
+            }
+            joinVoiceChannel(userVoiceChannel); // TODO Test permissions
+        }
+        const guildAudioManager = getGuildAudioManager(guildId);
+        const url = interaction.options.getString('query'); // TODO Temporary
+        guildAudioManager.enqueueAudio(path.join(path.resolve(import.meta.dirname, '..'), `${url}`));
+        const startedPlaying = guildAudioManager.playEnqueuedAudio();
+        if (startedPlaying)
+            await interaction.reply(`Playing ${url}.`);
+        else
+            await interaction.reply(`Added ${url} to the queue.`);
     },
 };
