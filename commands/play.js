@@ -1,15 +1,15 @@
 import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
-import { enqueueAudio, joinVoiceChannel, playEnqueuedAudio, setupVoiceConnection } from '../voice-manager.js';
+import { enqueueAudio, joinVoiceChannel, playEnqueuedAudio } from '../voice-manager.js';
 import path from 'path';
 
 export default {
     data: new SlashCommandBuilder()
         .setName('play')
-        .setDescription('Adds a song to the play queue.')
+        .setDescription('Plays a song or adds it to the queue.')
         .setContexts([InteractionContextType.Guild])
         .addStringOption((option) => option
             .setName('query')
-            .setDescription('Youtube URL.')
+            .setDescription('Youtube URL.') // TODO change once it works
             .setRequired(true)),
     /**
     * @param {ChatInputCommandInteraction} interaction

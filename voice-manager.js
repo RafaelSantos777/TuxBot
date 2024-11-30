@@ -1,39 +1,53 @@
-import { Client, VoiceChannel } from 'discord.js';
+import { VoiceChannel } from 'discord.js';
+import { getClient } from './client.js';
 import {
-    AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource,
-    entersState, joinVoiceChannel as discordJoinVoiceChannel, VoiceConnection, VoiceConnectionStatus,
+    AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, entersState,
+    getVoiceConnection, joinVoiceChannel as discordJoinVoiceChannel, VoiceConnection, VoiceConnectionStatus,
 } from '@discordjs/voice';
+
 // TODO Most functions take GuildId, maybe use create a custom class called GuildAudioManager
 // with the necessary functions and 3 variables: guildId, audioPlayer, and audioQueue
 // In that case guildAudioQueues would instead be a list of GuildAudioManage
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3_000;
 const guildAudioQueues = new Map();
 
+export function setupVoiceManager() {
+    getClient().guilds.cache.forEach((guild) => registerGuildAudioPlayer(guild.id));
+}
+
 /**
-* @param {Client} client
+* @param {VoiceChannel} voiceChannel
 */
-export function setupVoiceManager(client) {
-    client.guilds.cache.forEach((guild) => registerGuildAudioPlayer(guild.id));
+export function isInVoiceChannel(voiceChannel) {
+    return voiceChannel.members.has(getClient().user.id);
 }
 
 /**
 * @param {VoiceChannel} voiceChannel
 */
 export function joinVoiceChannel(voiceChannel) {
-    const voiceConnection = discordJoinVoiceChannel({
+    const currentVoiceConnection = getVoiceConnection(voiceChannel.guildId);
+    if (currentVoiceConnection !== undefined) {
+        console.log('ja existia conexao');
+        currentVoiceConnection.joinConfig.channelId = voiceChannel.id;
+        currentVoiceConnection.rejoin();
+        return;
+    }
+    const newVoiceConnection = discordJoinVoiceChannel({
         channelId: voiceChannel.id,
         guildId: voiceChannel.guildId,
         adapterCreator: voiceChannel.guild.voiceAdapterCreator,
         selfDeaf: true,
     });
-    return voiceConnection;
+    console.log('vou dar setup a conexao');
+    setupVoiceConnection(newVoiceConnection, voiceChannel.guildId);
 }
 
 /**
 * @param {VoiceConnection} voiceConnection
 * @param {string} guildId
 */
-export function setupVoiceConnection(voiceConnection, guildId) {
+function setupVoiceConnection(voiceConnection, guildId) {
     voiceConnection.on(VoiceConnectionStatus.Disconnected, async () => {
         try {
             await Promise.race([
@@ -44,7 +58,10 @@ export function setupVoiceConnection(voiceConnection, guildId) {
             voiceConnection.destroy();
         }
     });
-    voiceConnection.on(VoiceConnectionStatus.Destroyed, () => { emptyGuildAudioQueue(guildId); });
+    voiceConnection.on(VoiceConnectionStatus.Destroyed, () => {
+        console.log('object');
+        emptyGuildAudioQueue(guildId);
+    });
     const audioPlayer = getGuildAudioPlayer(guildId);
     voiceConnection.subscribe(audioPlayer);
 }
