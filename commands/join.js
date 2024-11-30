@@ -1,10 +1,10 @@
-import { ChannelType, ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from "discord.js";
-import { joinVoiceChannel } from '@discordjs/voice'
+import { ChannelType, ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import { joinVoiceChannel, setupVoiceConnection } from '../voice-manager.js';
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('join')
-		.setDescription('Joins the chosen voice channel. If none is specified, joins the voice channel you are currently in.')
+		.setDescription('Joins the selected voice channel. If none is selected, joins the voice channel you are currently in.')
 		.setContexts([InteractionContextType.Guild])
 		.addChannelOption((option) => option
 			.setName('channel')
@@ -16,18 +16,14 @@ export default {
 	*/
 	async execute(interaction) {
 		const guildMember = await interaction.guild.members.fetch(interaction.user.id);
-		const optionsVoiceChannel = interaction.options.getChannel('channel');
-		const voiceChannelToJoin = optionsVoiceChannel ? optionsVoiceChannel : guildMember.voice.channel;
+		const selectedVoiceChannel = interaction.options.getChannel('channel');
+		const voiceChannelToJoin = selectedVoiceChannel ? selectedVoiceChannel : guildMember.voice.channel;
 		if (voiceChannelToJoin === null) {
-			await interaction.reply('You must be in a voice channel or provide one. 🤦‍♂️');
+			await interaction.reply('You must be in a voice channel or select one.');
 			return;
 		}
-		const voiceConnection = joinVoiceChannel({
-			channelId: voiceChannelToJoin.id,
-			guildId: voiceChannelToJoin.guildId,
-			adapterCreator: voiceChannelToJoin.guild.voiceAdapterCreator,
-			selfDeaf: true,
-		})
+		const voiceConnection = joinVoiceChannel(voiceChannelToJoin);
+		setupVoiceConnection(voiceConnection, voiceChannelToJoin.guildId);
 		await interaction.reply(`Joined ${voiceChannelToJoin}.`);
 	},
 };

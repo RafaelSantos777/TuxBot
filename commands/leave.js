@@ -1,15 +1,22 @@
-import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import { getVoiceConnection } from '@discordjs/voice';
 
 export default {
 	data: new SlashCommandBuilder()
 		.setName('leave')
-		.setDescription('Leaves.')
+		.setDescription('Leaves the current voice channel.')
 		.setContexts([InteractionContextType.Guild]),
 	/**
 	* @param {ChatInputCommandInteraction} interaction
 	*/
 	async execute(interaction) {
-		await interaction.reply('Left!');
+		const voiceConnection = getVoiceConnection(interaction.guildId);
+		if (voiceConnection === undefined) {
+			await interaction.reply(`I'm not in a voice channel.`);
+			return;
+		}
+		voiceConnection.destroy();
+		await interaction.reply(`Bye bye!`);
 	},
 };
 

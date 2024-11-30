@@ -1,12 +1,13 @@
-import 'dotenv/config'
+import 'dotenv/config';
 import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import path from 'path';
 import fs from 'fs';
 import { pathToFileURL } from 'url';
+import { setupVoiceManager, registerGuildAudioPlayer } from './voice-manager.js';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
 const { BOT_TOKEN, APPLICATION_ID } = process.env;
-const CLIENT_INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.MessageContent]
+const CLIENT_INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.MessageContent];
 const client = new Client({ intents: CLIENT_INTENTS });
 const commands = new Map();
 
@@ -45,6 +46,10 @@ function setupClient() {
                 await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
         }
     });
+    client.on(Events.GuildCreate, (guild) => {
+        registerGuildAudioPlayer(guild.id);
+        console.log(guild.id);
+    });
 }
 
 async function main() {
@@ -53,6 +58,7 @@ async function main() {
         await deployCommands();
         setupClient();
         await client.login(BOT_TOKEN);
+        setupVoiceManager(client);
         console.log('Client logged in successfully.');
     } catch (error) {
         console.error(error);
