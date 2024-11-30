@@ -6,11 +6,11 @@ import path from 'path';
 export default {
     data: new SlashCommandBuilder()
         .setName('play')
-        .setDescription('Plays a song or adds it to the queue.')
+        .setDescription('Plays an audio or adds it to the queue.')
         .setContexts([InteractionContextType.Guild])
         .addStringOption((option) => option
             .setName('query')
-            .setDescription('Youtube URL.') // TODO change once it works with more
+            .setDescription('Youtube URL.') // TODO change description once it works with more
             .setRequired(true)),
     /**
     * @param {ChatInputCommandInteraction} interaction
@@ -24,15 +24,19 @@ export default {
                 await interaction.reply('Either you or I must be in a voice channel.');
                 return;
             }
-            joinVoiceChannel(userVoiceChannel); // TODO Test permissions
+            joinVoiceChannel(userVoiceChannel);
         }
         const guildAudioManager = getGuildAudioManager(guildId);
-        const url = interaction.options.getString('query'); // TODO Temporary
-        guildAudioManager.enqueueAudio(path.join(path.resolve(import.meta.dirname, '..'), `${url}`));
-        const startedPlaying = guildAudioManager.playEnqueuedAudio();
+        const query = interaction.options.getString('query');
+        const wasAudioEnqueued = guildAudioManager.enqueueAudio(query);
+        if (!wasAudioEnqueued) {
+            await interaction.reply('Currently, this command only supports Youtube URLs.');
+            return;
+        }
+        const startedPlaying = guildAudioManager.play();
         if (startedPlaying)
-            await interaction.reply(`Playing ${url}.`);
+            await interaction.reply(`Playing ${query}.`);
         else
-            await interaction.reply(`Added ${url} to the queue.`);
+            await interaction.reply(`Added ${query} to the queue.`);
     },
 };

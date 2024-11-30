@@ -1,8 +1,9 @@
 import { BaseInteraction, StageChannel, VoiceChannel } from 'discord.js';
 import { getClient } from './client.js';
+import ytdl from '@distube/ytdl-core';
 import {
     AudioPlayerStatus, createAudioPlayer, createAudioResource, entersState, getVoiceConnection,
-    joinVoiceChannel as discordJoinVoiceChannel, VoiceConnection, VoiceConnectionStatus,
+    joinVoiceChannel as discordJoinVoiceChannel, NoSubscriberBehavior, VoiceConnection, VoiceConnectionStatus,
 } from '@discordjs/voice';
 
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3_000;
@@ -88,33 +89,48 @@ function setupVoiceConnection(voiceConnection, guildId) {
 class GuildAudioManager {
 
     constructor() {
-        this.audioPlayer = createAudioPlayer();
+        this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Stop } });
         this.#setupAudioPlayer();
         this.queue = [];
     }
 
-    #setupAudioPlayer() { // TODO Set NoSubscriber option to STOP
-        this.audioPlayer.on(AudioPlayerStatus.Idle, () => { this.playEnqueuedAudio(); });
+    #setupAudioPlayer() {
+        this.audioPlayer.on(AudioPlayerStatus.Idle, () => { this.play(); }); // TODO If oldstate (check doc) was paused, do nothing?
     }
 
     /**
     * @param {string} query
     */
     enqueueAudio(query) {
-        const audioResource = createAudioResource(query);
+        if (!ytdl.validateURL(query))
+            return false;
+        const ytdlResource = ytdl(query, { quality: 'audioonly', quality: 'highestaudio', dlChunkSize: 0 });
+        const audioResource = createAudioResource(ytdlResource);
         this.queue.push(audioResource);
+        return true;
     }
 
-    playEnqueuedAudio() {
-        if (this.queue.length === 0 || this.audioPlayer.state.status !== AudioPlayerStatus.Idle)
+    play() {
+        if (this.isQueueEmpty() || this.audioPlayer.state.status !== AudioPlayerStatus.Idle) // TODO Change once /pause is implemented
             return false;
         const audioResource = this.queue.shift();
         this.audioPlayer.play(audioResource);
         return true;
     }
 
+    skip() {
+        if (this.isQueueEmpty() && this.audioPlayer.state.status === AudioPlayerStatus.Idle)
+            return false;
+        this.audioPlayer.stop();
+        return true;
+    }
+
     emptyQueue() {
         this.queue = [];
+    }
+
+    isQueueEmpty() {
+        return this.queue.length === 0;
     }
 }
 
