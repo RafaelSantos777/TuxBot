@@ -1,7 +1,6 @@
 import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import { getGuildAudioManager, getInteractionUserVoiceChannel, joinVoiceChannel } from '../voice-manager.js';
 import { getVoiceConnection } from '@discordjs/voice';
-import path from 'path';
 
 export default {
     data: new SlashCommandBuilder()

@@ -81,7 +81,10 @@ function setupVoiceConnection(voiceConnection, guildId) {
             voiceConnection.destroy();
         }
     });
-    voiceConnection.on(VoiceConnectionStatus.Destroyed, () => { guildAudioManager.emptyQueue(); });
+    voiceConnection.on(VoiceConnectionStatus.Destroyed, () => {
+        guildAudioManager.emptyQueue();
+        guildAudioManager.audioPlayer.stop();
+    });
     const audioPlayer = guildAudioManager.audioPlayer;
     voiceConnection.subscribe(audioPlayer);
 }
@@ -89,13 +92,16 @@ function setupVoiceConnection(voiceConnection, guildId) {
 class GuildAudioManager {
 
     constructor() {
-        this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Stop } });
+        this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
         this.#setupAudioPlayer();
         this.queue = [];
     }
 
     #setupAudioPlayer() {
         this.audioPlayer.on(AudioPlayerStatus.Idle, () => { this.play(); }); // TODO If oldstate (check doc) was paused, do nothing?
+        this.audioPlayer.on('error', error => {
+            console.error(`Error: ${error.message} with resource ${error.resource}`);
+        });
     }
 
     /**
