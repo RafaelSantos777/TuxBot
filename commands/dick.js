@@ -53,8 +53,7 @@ function createDickReply(userDisplayName) {
 	}
 
 	const dickSizeCentimeters = generateRandomDickSizeCentimeters();
-	const possessiveMarker = `${userDisplayName.toLowerCase().endsWith('s') ? '\'' : '\'s'}`;
 	const emoji = getEmoji();
-	return `${userDisplayName}${possessiveMarker} dick is **${formatSizeWithUnits()}** long.${emoji ? ' ' : ''}${emoji}\n**${getDickShape()}**`;
+	return `${userDisplayName}'s dick is **${formatSizeWithUnits()}** long.${emoji ? ' ' : ''}${emoji}\n**${getDickShape()}**`;
 }
 

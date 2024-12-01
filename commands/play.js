@@ -27,7 +27,7 @@ export default {
         }
         const guildAudioManager = getGuildAudioManager(guildId);
         const query = interaction.options.getString('query');
-        const wasAudioEnqueued = guildAudioManager.enqueueAudio(query);
+        const wasAudioEnqueued = await guildAudioManager.enqueueAudio(query);
         if (!wasAudioEnqueued) {
             await interaction.reply('Currently, this command only supports Youtube URLs.');
             return;

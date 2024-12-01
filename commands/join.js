@@ -23,7 +23,7 @@ export default {
 			return;
 		}
 		if (isInVoiceChannel(voiceChannel)) {
-			await interaction.reply(`I'm already in that voice channel.`);
+			await interaction.reply(`I'm already in ${voiceChannel}.`);
 			return;
 		}
 		joinVoiceChannel(voiceChannel);

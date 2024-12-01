@@ -2,7 +2,7 @@ import { BaseInteraction, StageChannel, VoiceChannel } from 'discord.js';
 import { getClient } from './client.js';
 import ytdl from '@distube/ytdl-core';
 import {
-    AudioPlayerStatus, createAudioPlayer, createAudioResource, entersState, getVoiceConnection,
+    AudioPlayerStatus, createAudioPlayer, createAudioResource, demuxProbe, entersState, getVoiceConnection,
     joinVoiceChannel as discordJoinVoiceChannel, NoSubscriberBehavior, VoiceConnection, VoiceConnectionStatus,
 } from '@discordjs/voice';
 
@@ -99,19 +99,18 @@ class GuildAudioManager {
 
     #setupAudioPlayer() {
         this.audioPlayer.on(AudioPlayerStatus.Idle, () => { this.play(); }); // TODO If oldstate (check doc) was paused, do nothing?
-        this.audioPlayer.on('error', error => {
-            console.error(`Error: ${error.message} with resource ${error.resource}`);
-        });
+        this.audioPlayer.on('error', error => { console.error(error); });
     }
 
     /**
     * @param {string} query
     */
-    enqueueAudio(query) {
+    async enqueueAudio(query) {
         if (!ytdl.validateURL(query))
             return false;
-        const ytdlResource = ytdl(query, { quality: 'audioonly', quality: 'highestaudio', dlChunkSize: 0 });
-        const audioResource = createAudioResource(ytdlResource);
+        const ytdlStream = ytdl(query, { quality: 'audioonly', quality: 'highestaudio', dlChunkSize: 0 });
+        const probeInfo = await demuxProbe(ytdlStream);
+        const audioResource = createAudioResource(probeInfo.stream, { inputType: probeInfo.type });
         this.queue.push(audioResource);
         return true;
     }

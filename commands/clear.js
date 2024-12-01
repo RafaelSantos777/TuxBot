@@ -11,8 +11,7 @@ export default {
     * @param {ChatInputCommandInteraction} interaction
     */
     async execute(interaction) {
-        const guildId = interaction.guildId;
-        const guildAudioManager = getGuildAudioManager(guildId);
+        const guildAudioManager = getGuildAudioManager(interaction.guildId);
         if (guildAudioManager.isQueueEmpty()) {
             await interaction.reply(`There's no queue to clear.`);
             return;

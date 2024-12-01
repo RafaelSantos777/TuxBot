@@ -11,8 +11,7 @@ export default {
     * @param {ChatInputCommandInteraction} interaction
     */
     async execute(interaction) {
-        const guildId = interaction.guildId;
-        const guildAudioManager = getGuildAudioManager(guildId);
+        const guildAudioManager = getGuildAudioManager(interaction.guildId);
         const wasSkipped = guildAudioManager.skip();
         if (wasSkipped)
             await interaction.reply('Skipped.');
