@@ -6,25 +6,26 @@ import {
     joinVoiceChannel as discordJoinVoiceChannel, NoSubscriberBehavior, VoiceConnection, VoiceConnectionStatus,
 } from '@discordjs/voice';
 
-const DISCONNECTION_TIMEOUT_MILLISECONDS = 3_000;
+const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
+const STREAM_BUFFER_SIZE = 1 << 24;
 const guildAudioManagers = new Map();
 
 export function setupVoiceManager() {
-    getClient().guilds.cache.forEach((guild) => addGuildAudioManager(guild.id));
+    getClient().guilds.cache.forEach((guild) => addAudioManager(guild.id));
 }
 
 /**
 * @param {string} guildId
 */
-export function addGuildAudioManager(guildId) {
-    guildAudioManagers.set(guildId, new GuildAudioManager());
+export function addAudioManager(guildId) {
+    guildAudioManagers.set(guildId, new AudioManager());
 }
 
 /**
 * @param {string} guildId
-* @return {GuildAudioManager}
+* @return {AudioManager}
 */
-export function getGuildAudioManager(guildId) {
+export function getAudioManager(guildId) {
     return guildAudioManagers.get(guildId);
 }
 
@@ -70,7 +71,7 @@ export function joinVoiceChannel(voiceChannel) {
 * @param {string} guildId
 */
 function setupVoiceConnection(voiceConnection, guildId) {
-    const guildAudioManager = getGuildAudioManager(guildId);
+    const audioManager = getAudioManager(guildId);
     voiceConnection.on(VoiceConnectionStatus.Disconnected, async () => {
         try {
             await Promise.race([
@@ -82,14 +83,14 @@ function setupVoiceConnection(voiceConnection, guildId) {
         }
     });
     voiceConnection.on(VoiceConnectionStatus.Destroyed, () => {
-        guildAudioManager.emptyQueue();
-        guildAudioManager.audioPlayer.stop();
+        audioManager.emptyQueue();
+        audioManager.audioPlayer.stop();
     });
-    const audioPlayer = guildAudioManager.audioPlayer;
+    const audioPlayer = audioManager.audioPlayer;
     voiceConnection.subscribe(audioPlayer);
 }
 
-class GuildAudioManager {
+class AudioManager {
 
     constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
@@ -108,7 +109,7 @@ class GuildAudioManager {
     async enqueueAudio(query) {
         if (!ytdl.validateURL(query))
             return false;
-        const ytdlStream = ytdl(query, { quality: 'audioonly', quality: 'highestaudio', dlChunkSize: 0 });
+        const ytdlStream = ytdl(query, { quality: 'audioonly', quality: 'highestaudio', dlChunkSize: 0, highWaterMark: STREAM_BUFFER_SIZE });
         const probeInfo = await demuxProbe(ytdlStream);
         const audioResource = createAudioResource(probeInfo.stream, { inputType: probeInfo.type });
         this.queue.push(audioResource);
@@ -120,6 +121,7 @@ class GuildAudioManager {
             return false;
         const audioResource = this.queue.shift();
         this.audioPlayer.play(audioResource);
+        console.log(audioResource);
         return true;
     }
 

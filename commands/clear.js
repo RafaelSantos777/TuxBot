@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
-import { getGuildAudioManager } from '../voice-manager.js';
+import { getAudioManager } from '../voice-manager.js';
 
 
 export default {
@@ -11,12 +11,12 @@ export default {
     * @param {ChatInputCommandInteraction} interaction
     */
     async execute(interaction) {
-        const guildAudioManager = getGuildAudioManager(interaction.guildId);
-        if (guildAudioManager.isQueueEmpty()) {
-            await interaction.reply(`There's no queue to clear.`);
+        const audioManager = getAudioManager(interaction.guildId);
+        if (audioManager.isQueueEmpty()) {
+            await interaction.reply({ content: `There's no queue to clear.`, ephemeral: true });
             return;
         }
-        guildAudioManager.emptyQueue();
+        audioManager.emptyQueue();
         await interaction.reply('Queue cleared.');
     },
 };

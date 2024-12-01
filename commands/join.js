@@ -19,11 +19,11 @@ export default {
 		const selectedVoiceChannel = interaction.options.getChannel('channel');
 		const voiceChannel = selectedVoiceChannel ? selectedVoiceChannel : userVoiceChannel;
 		if (voiceChannel === null) {
-			await interaction.reply('You must be in a voice channel or select one.');
+			await interaction.reply({ content: 'You must be in a voice channel or select one.', ephemeral: true });
 			return;
 		}
 		if (isInVoiceChannel(voiceChannel)) {
-			await interaction.reply(`I'm already in ${voiceChannel}.`);
+			await interaction.reply({ content: `I'm already in ${voiceChannel}.`, ephemeral: true });
 			return;
 		}
 		joinVoiceChannel(voiceChannel);

@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
-import { getGuildAudioManager, getInteractionUserVoiceChannel, joinVoiceChannel } from '../voice-manager.js';
+import { getAudioManager, getInteractionUserVoiceChannel, joinVoiceChannel } from '../voice-manager.js';
 import { getVoiceConnection } from '@discordjs/voice';
 
 export default {
@@ -9,7 +9,7 @@ export default {
         .setContexts([InteractionContextType.Guild])
         .addStringOption((option) => option
             .setName('query')
-            .setDescription('Youtube URL.') // TODO change description once it works with more
+            .setDescription('Youtube URL.') // TODO change description and replies once it works with more
             .setRequired(true)),
     /**
     * @param {ChatInputCommandInteraction} interaction
@@ -20,19 +20,19 @@ export default {
         if (voiceConnection === undefined) {
             const userVoiceChannel = await getInteractionUserVoiceChannel(interaction);
             if (userVoiceChannel === null) {
-                await interaction.reply('Either you or I must be in a voice channel.');
+                await interaction.reply({ content: 'Either you or I must be in a voice channel.', ephemeral: true });
                 return;
             }
             joinVoiceChannel(userVoiceChannel);
         }
-        const guildAudioManager = getGuildAudioManager(guildId);
+        const audioManager = getAudioManager(guildId);
         const query = interaction.options.getString('query');
-        const wasAudioEnqueued = await guildAudioManager.enqueueAudio(query);
+        const wasAudioEnqueued = await audioManager.enqueueAudio(query);
         if (!wasAudioEnqueued) {
-            await interaction.reply('Currently, this command only supports Youtube URLs.');
+            await interaction.reply({ content: 'Currently, this command only supports Youtube URLs.', ephemeral: true });
             return;
         }
-        const startedPlaying = guildAudioManager.play();
+        const startedPlaying = audioManager.play();
         if (startedPlaying)
             await interaction.reply(`Playing ${query}.`);
         else

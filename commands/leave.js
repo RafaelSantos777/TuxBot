@@ -12,7 +12,7 @@ export default {
 	async execute(interaction) {
 		const voiceConnection = getVoiceConnection(interaction.guildId);
 		if (voiceConnection === undefined) {
-			await interaction.reply(`I'm not in a voice channel.`);
+			await interaction.reply({ content: `I'm not in a voice channel.`, ephemeral: true });
 			return;
 		}
 		voiceConnection.destroy();

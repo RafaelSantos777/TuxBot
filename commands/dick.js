@@ -6,6 +6,10 @@ const MAX_EXTRA_DICK_SIZE_CENTIMETERS = 0.5;
 const MAX_BASE_MULTIPLER = 3;
 const MULTIPLIER_EXPONENT = 3;
 const MULTIPLIER_CHANCE = 0.15;
+const HUGE_DICK_SIZE_CENTIMETERS = 30;
+const BIG_DICK_SIZE_CENTIMETERS = 18;
+const SMALL_DICK_SIZE_CENTIMETERS = 10;
+const TINY_DICK_SIZE_CENTIMETERS = 5;
 
 export default {
 	data: new SlashCommandBuilder()
@@ -41,13 +45,13 @@ function createDickReply(userDisplayName) {
 	}
 
 	function getEmoji() {
-		if (dickSizeCentimeters >= 30)
+		if (dickSizeCentimeters >= HUGE_DICK_SIZE_CENTIMETERS)
 			return BOT_EMOJIS.MONKAW;
-		else if (dickSizeCentimeters >= 18)
+		else if (dickSizeCentimeters >= BIG_DICK_SIZE_CENTIMETERS)
 			return BOT_EMOJIS.POG;
-		else if (dickSizeCentimeters <= 5)
+		else if (dickSizeCentimeters <= TINY_DICK_SIZE_CENTIMETERS)
 			return BOT_EMOJIS.OMEGALUL;
-		else if (dickSizeCentimeters <= 10)
+		else if (dickSizeCentimeters <= SMALL_DICK_SIZE_CENTIMETERS)
 			return BOT_EMOJIS.KEKW;
 		return '';
 	}

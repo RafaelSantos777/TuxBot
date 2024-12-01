@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
-import { getGuildAudioManager } from '../voice-manager.js';
+import { getAudioManager } from '../voice-manager.js';
 
 
 export default {
@@ -11,11 +11,11 @@ export default {
     * @param {ChatInputCommandInteraction} interaction
     */
     async execute(interaction) {
-        const guildAudioManager = getGuildAudioManager(interaction.guildId);
-        const wasSkipped = guildAudioManager.skip();
+        const audioManager = getAudioManager(interaction.guildId);
+        const wasSkipped = audioManager.skip();
         if (wasSkipped)
             await interaction.reply('Skipped.');
         else
-            await interaction.reply('No audio to skip.');
+            await interaction.reply({ content: 'No audio to skip.', ephemeral: true });
     },
 };
