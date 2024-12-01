@@ -1,4 +1,4 @@
-import { deployCommands, login, setupCommands, setupEventHandlers } from './client.js';
+import { deployCommands, login, logout, setupCommands, setupEventHandlers } from './client.js';
 import { setupVoiceManager } from './voice-manager.js';
 
 async function main() {
@@ -11,6 +11,7 @@ async function main() {
         console.log('Client logged in successfully.');
     } catch (error) {
         console.error(error);
+        await logout();
         process.exit(1);
     }
 }

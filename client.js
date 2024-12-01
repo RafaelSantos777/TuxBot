@@ -57,6 +57,10 @@ export async function login() {
     await client.login(BOT_TOKEN);
 }
 
+export async function logout() {
+    await client.destroy();
+}
+
 
 
 

@@ -14,11 +14,11 @@ export default {
 	/**
 	* @param {ChatInputCommandInteraction} interaction
 	*/
-	async execute(interaction) {
+	async execute(interaction) { // TODO Check permission to join (in /play too)
 		const userVoiceChannel = await getInteractionUserVoiceChannel(interaction);
 		const selectedVoiceChannel = interaction.options.getChannel('channel');
 		const voiceChannel = selectedVoiceChannel ? selectedVoiceChannel : userVoiceChannel;
-		if (voiceChannel === null) {
+		if (!voiceChannel) {
 			await interaction.reply({ content: 'You must be in a voice channel or select one.', ephemeral: true });
 			return;
 		}

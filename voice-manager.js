@@ -7,7 +7,7 @@ import {
 } from '@discordjs/voice';
 
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
-const STREAM_BUFFER_SIZE = 1 << 24;
+const STREAM_BUFFER_SIZE = 1 << 23;
 const guildAudioManagers = new Map();
 
 export function setupVoiceManager() {
@@ -98,15 +98,15 @@ class AudioManager {
         this.queue = [];
     }
 
-    #setupAudioPlayer() {
-        this.audioPlayer.on(AudioPlayerStatus.Idle, () => { this.play(); }); // TODO If oldstate (check doc) was paused, do nothing?
+    #setupAudioPlayer() { // TODO If oldstate (check doc) was paused, do nothing?
+        this.audioPlayer.on(AudioPlayerStatus.Idle, () => { this.play(); });
         this.audioPlayer.on('error', error => { console.error(error); });
     }
 
     /**
     * @param {string} query
     */
-    async enqueueAudio(query) {
+    async enqueueAudio(query) { // TODO Work with age-restricted videos, work with search queries // TODO Test without demuxProbe
         if (!ytdl.validateURL(query))
             return false;
         const ytdlStream = ytdl(query, { filter: 'audioonly', quality: 'highestaudio', dlChunkSize: 0, highWaterMark: STREAM_BUFFER_SIZE });
@@ -116,12 +116,11 @@ class AudioManager {
         return true;
     }
 
-    play() {
-        if (this.isQueueEmpty() || this.audioPlayer.state.status !== AudioPlayerStatus.Idle) // TODO Change once /pause is implemented
+    play() { // TODO Change once /pause is implemented
+        if (this.isQueueEmpty() || this.audioPlayer.state.status !== AudioPlayerStatus.Idle)
             return false;
         const audioResource = this.queue.shift();
         this.audioPlayer.play(audioResource);
-        console.log(audioResource);
         return true;
     }
 
