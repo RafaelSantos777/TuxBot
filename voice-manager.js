@@ -109,7 +109,7 @@ class AudioManager {
     async enqueueAudio(query) {
         if (!ytdl.validateURL(query))
             return false;
-        const ytdlStream = ytdl(query, { quality: 'audioonly', quality: 'highestaudio', dlChunkSize: 0, highWaterMark: STREAM_BUFFER_SIZE });
+        const ytdlStream = ytdl(query, { filter: 'audioonly', quality: 'highestaudio', dlChunkSize: 0, highWaterMark: STREAM_BUFFER_SIZE });
         const probeInfo = await demuxProbe(ytdlStream);
         const audioResource = createAudioResource(probeInfo.stream, { inputType: probeInfo.type });
         this.queue.push(audioResource);
