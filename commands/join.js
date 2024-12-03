@@ -14,7 +14,7 @@ export default {
 	/**
 	* @param {ChatInputCommandInteraction} interaction
 	*/
-	async execute(interaction) { // TODO Check permission to join (in /play too)
+	async execute(interaction) { // TODO I don't have permission to join ${voiceChannel} (check if it's formatted correctly when user provides no channel to join the in command and is in hidden channel that bot has no access to)
 		const userVoiceChannel = await getInteractionUserVoiceChannel(interaction);
 		const selectedVoiceChannel = interaction.options.getChannel('channel');
 		const voiceChannel = selectedVoiceChannel ? selectedVoiceChannel : userVoiceChannel;
