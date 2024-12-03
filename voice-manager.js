@@ -106,7 +106,11 @@ class AudioManager {
     /**
     * @param {string} query
     */
-    async enqueueAudio(query) { // TODO Work with age-restricted videos, work with search queries // TODO Test without demuxProbe
+    async enqueueAudio(query) {
+        // TODO Search queries and age-restricted videos 
+        // TODO Test inputType without demuxProbe to find out if it's relevant
+        // TODO See ChatGPT's tips for performance gains
+        // FIXME Error possibly caused by unhandled rejection from demuxProbe await
         if (!ytdl.validateURL(query))
             return false;
         const ytdlStream = ytdl(query, { filter: 'audioonly', quality: 'highestaudio', dlChunkSize: 0, highWaterMark: STREAM_BUFFER_SIZE });
