@@ -1,13 +1,14 @@
 import { BaseInteraction, StageChannel, VoiceChannel } from 'discord.js';
 import { getClient } from './client.js';
 import ytdl from '@distube/ytdl-core';
+import ytsearch from 'yt-search';
 import {
-    AudioPlayerStatus, createAudioPlayer, createAudioResource, demuxProbe, entersState, getVoiceConnection,
+    AudioPlayerStatus, createAudioPlayer, createAudioResource, entersState, getVoiceConnection,
     joinVoiceChannel as discordJoinVoiceChannel, NoSubscriberBehavior, VoiceConnection, VoiceConnectionStatus,
 } from '@discordjs/voice';
 
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
-const STREAM_BUFFER_SIZE = 1 << 23;
+const STREAM_BUFFER_SIZE = 8 << 20;
 const guildAudioManagers = new Map();
 
 export function setupVoiceManager() {
@@ -90,7 +91,7 @@ function setupVoiceConnection(voiceConnection, guildId) {
     voiceConnection.subscribe(audioPlayer);
 }
 
-class AudioManager {
+class AudioManager { // TODO Implement /pause, /resume, /queue and /remove 
 
     constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
@@ -98,7 +99,7 @@ class AudioManager {
         this.queue = [];
     }
 
-    #setupAudioPlayer() { // TODO If oldstate (check doc) was paused, do nothing?
+    #setupAudioPlayer() {
         this.audioPlayer.on(AudioPlayerStatus.Idle, () => { this.play(); });
         this.audioPlayer.on('error', error => { console.error(error); });
     }
@@ -107,20 +108,20 @@ class AudioManager {
     * @param {string} query
     */
     async enqueueAudio(query) {
-        // TODO Search queries and age-restricted videos 
-        // TODO Test inputType without demuxProbe to find out if it's relevant
-        // TODO See ChatGPT's tips for performance gains
-        // FIXME Error possibly caused by unhandled rejection from demuxProbe await
-        if (!ytdl.validateURL(query))
-            return false;
-        const ytdlStream = ytdl(query, { filter: 'audioonly', quality: 'highestaudio', dlChunkSize: 0, highWaterMark: STREAM_BUFFER_SIZE });
-        const probeInfo = await demuxProbe(ytdlStream);
-        const audioResource = createAudioResource(probeInfo.stream, { inputType: probeInfo.type });
+        let downloadURL = query;
+        if (!ytdl.validateURL(query)) {
+            const searchResults = await ytsearch(query);
+            if (searchResults.videos.length === 0)
+                return null;
+            downloadURL = searchResults.videos[0].url;
+        }
+        const ytdlStream = ytdl(downloadURL, { filter: 'audioonly', quality: 'highestaudio', dlChunkSize: 0, highWaterMark: STREAM_BUFFER_SIZE });
+        const audioResource = createAudioResource(ytdlStream);
         this.queue.push(audioResource);
-        return true;
+        return downloadURL;
     }
 
-    play() { // TODO Change once /pause is implemented
+    play() {
         if (this.isQueueEmpty() || this.audioPlayer.state.status !== AudioPlayerStatus.Idle)
             return false;
         const audioResource = this.queue.shift();
