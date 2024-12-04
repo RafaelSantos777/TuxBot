@@ -109,30 +109,28 @@ class AudioManager { // TODO Implement /pause, /resume, /queue and /remove, play
     /**
     * @param {string} query
     */
-    async #searchAudioURL(query) {
-        let audioURL = query;
-        const isQueryValidURL = ytdl.validateURL(query);
-        if (!isQueryValidURL) {
+    async enqueueAudio(query) {
+
+        async function searchAudioURL() {
             const searchResults = await youtubeSearchAPI.GetListByKeyword(query, false, 1, [{ type: 'video' }]);
             if (searchResults.items.length === 0)
                 throw new AudioManagerError(`No results found for "${query}" on Youtube.`);
-            audioURL = `https://youtu.be/${searchResults.items[0].id}`;
+            return `https://youtu.be/${searchResults.items[0].id}`;
         }
-        try {
-            await ytdl.getBasicInfo(audioURL);
-        } catch (error) {
-            throw new AudioManagerError(isQueryValidURL
-                ? `I can't access that Youtube URL, it's probably age-restricted or private.`
-                : `I can't access the result I found for "${query}" on Youtube, it's probably age-restricted.`);
-        }
-        return audioURL;
-    }
 
-    /**
-    * @param {string} query
-    */
-    async enqueueAudio(query) {
-        const audioURL = await this.#searchAudioURL(query);
+        async function checkAudioURLAccessibility() {
+            try {
+                await ytdl.getBasicInfo(audioURL);
+            } catch (error) {
+                throw new AudioManagerError(isQueryValidURL
+                    ? `I can't access that Youtube URL, it's probably age-restricted or private.`
+                    : `I can't access the result I found for "${query}" on Youtube, it's probably age-restricted.`);
+            }
+        }
+
+        const isQueryValidURL = ytdl.validateURL(query);
+        const audioURL = isQueryValidURL ? query : await searchAudioURL(query);
+        await checkAudioURLAccessibility();
         const ytdlStream = ytdl(audioURL, { filter: 'audioonly', quality: 'highestaudio', dlChunkSize: 0, highWaterMark: STREAM_BUFFER_SIZE });
         const audioResource = createAudioResource(ytdlStream);
         this.queue.push(audioResource);
