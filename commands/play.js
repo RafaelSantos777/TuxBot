@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilde
 import { AudioManagerError, getAudioManager, getInteractionUserVoiceChannel, joinVoiceChannel } from '../voice-manager.js';
 import { getVoiceConnection } from '@discordjs/voice';
 
-export default {
+export default { // TODO Add 'Youtube search term or' to description and replies in the future
     data: new SlashCommandBuilder()
         .setName('play')
         .setDescription('Plays an audio or adds it to the queue.')
@@ -36,6 +36,6 @@ export default {
         if (!voiceConnection)
             joinVoiceChannel(userVoiceChannel);
         const startedPlaying = audioManager.play();
-        await interaction.reply(startedPlaying ? `Playing ${enqueuedAudioURL}.` : `Added ${enqueuedAudioURL} to the queue.`);
+        await interaction.reply(startedPlaying ? `Playing ${query}.` : `Added ${query} to the queue.`);
     },
 };
