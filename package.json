@@ -1,11 +1,11 @@
 {
   "name": "tux-bot",
   "version": "1.0.0",
-  "description": "Discord Music Bot",
-  "main": "index.js",
+  "description": "Discord Music Bot that supports Youtube",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node index"
+    "start": "node src/index.js"
   },
   "author": "",
   "license": "ISC",

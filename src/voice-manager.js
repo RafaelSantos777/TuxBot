@@ -9,6 +9,7 @@ import {
 
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
 const STREAM_BUFFER_SIZE = 8 << 20;
+const YOUTUBE_SHORT_URL_DOMAIN = 'https://youtu.be/';
 const guildAudioManagers = new Map();
 
 export function setupVoiceManager() {
@@ -91,8 +92,6 @@ function setupVoiceConnection(voiceConnection, guildId) {
     voiceConnection.subscribe(audioPlayer);
 }
 
-export class AudioManagerError extends Error { }
-
 class AudioManager { // TODO Implement /pause, /resume, /queue and /remove, playlists, age-restricted content
 
     constructor() {
@@ -115,7 +114,7 @@ class AudioManager { // TODO Implement /pause, /resume, /queue and /remove, play
             const searchResults = await youtubeSearchAPI.GetListByKeyword(query, false, 1, [{ type: 'video' }]);
             if (searchResults.items.length === 0)
                 throw new AudioManagerError(`No results found for "${query}" on Youtube.`);
-            return `https://youtu.be/${searchResults.items[0].id}`;
+            return `${YOUTUBE_SHORT_URL_DOMAIN}${searchResults.items[0].id}`;
         }
 
         async function checkAudioURLAccessibility() {
@@ -160,3 +159,5 @@ class AudioManager { // TODO Implement /pause, /resume, /queue and /remove, play
         return this.queue.length === 0;
     }
 }
+
+export class AudioManagerError extends Error { }
