@@ -1,20 +1,20 @@
 import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
-import { getAudioManager, getInteractionUserVoiceChannel, joinVoiceChannel } from '../voice-manager.js';
+import { AudioManagerError, getAudioManager, getInteractionUserVoiceChannel, joinVoiceChannel } from '../voice-manager.js';
 import { getVoiceConnection } from '@discordjs/voice';
 
-export default { // TODO Add 'Youtube search term or' to description and replies in the future
+export default {
     data: new SlashCommandBuilder()
         .setName('play')
         .setDescription('Plays an audio or adds it to the queue.')
         .setContexts([InteractionContextType.Guild])
         .addStringOption((option) => option
             .setName('query')
-            .setDescription('Youtube URL.')
+            .setDescription('Youtube search term or Youtube video URL.')
             .setRequired(true)),
     /**
     * @param {ChatInputCommandInteraction} interaction
     */
-    async execute(interaction) { // TODO !voiceConnection && !hasPermissionToJoinVoiceChannel(userVoiceChannel)
+    async execute(interaction) { // TODO Check permission
         const guildId = interaction.guildId;
         const audioManager = getAudioManager(guildId);
         const voiceConnection = getVoiceConnection(guildId);
@@ -24,14 +24,18 @@ export default { // TODO Add 'Youtube search term or' to description and replies
             return;
         }
         const query = interaction.options.getString('query');
-        const wasAudioEnqueued = await audioManager.enqueueAudio(query);
-        if (!wasAudioEnqueued) {
-            await interaction.reply({ content: 'Currently, this command only supports Youtube URLs.', ephemeral: true });
-            return;
+        let enqueuedAudioURL;
+        try {
+            enqueuedAudioURL = await audioManager.enqueueAudio(query);
+        } catch (error) {
+            if (error instanceof AudioManagerError) {
+                await interaction.reply({ content: `${error.message}`, ephemeral: true });
+                return;
+            }
         }
         if (!voiceConnection)
             joinVoiceChannel(userVoiceChannel);
         const startedPlaying = audioManager.play();
-        await interaction.reply(startedPlaying ? `Playing ${query}.` : `Added ${query} to the queue.`);
+        await interaction.reply(startedPlaying ? `Playing ${enqueuedAudioURL}.` : `Added ${enqueuedAudioURL} to the queue.`);
     },
 };
