@@ -111,7 +111,8 @@ class AudioManager { // TODO Implement /pause, /resume, /queue and /remove, play
     */
     async #searchAudioURL(query) {
         let audioURL = query;
-        if (!ytdl.validateURL(query)) {
+        const isQueryValidURL = ytdl.validateURL(query);
+        if (!isQueryValidURL) {
             const searchResults = await youtubeSearchAPI.GetListByKeyword(query, false, 1, [{ type: 'video' }]);
             if (searchResults.items.length === 0)
                 throw new AudioManagerError(`No results found for "${query}" on Youtube.`);
@@ -120,10 +121,9 @@ class AudioManager { // TODO Implement /pause, /resume, /queue and /remove, play
         try {
             await ytdl.getBasicInfo(audioURL);
         } catch (error) {
-            if (ytdl.validateURL(query))
-                throw new AudioManagerError(`I can't access that Youtube video, it's probably age-restricted or private.`);
-            else
-                throw new AudioManagerError(`I can't access the result I found for "${query}" on Youtube, it's probably age-restricted.`);
+            throw new AudioManagerError(isQueryValidURL
+                ? `I can't access that Youtube URL, it's probably age-restricted or private.`
+                : `I can't access the result I found for "${query}" on Youtube, it's probably age-restricted.`);
         }
         return audioURL;
     }

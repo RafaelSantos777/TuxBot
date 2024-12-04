@@ -32,10 +32,11 @@ export default { // TODO Add 'Youtube search term or' to description and replies
                 await interaction.reply({ content: `${error.message}`, ephemeral: true });
                 return;
             }
+            throw new Error();
         }
         if (!voiceConnection)
             joinVoiceChannel(userVoiceChannel);
         const startedPlaying = audioManager.play();
-        await interaction.reply(startedPlaying ? `Playing ${query}.` : `Added ${query} to the queue.`);
+        await interaction.reply(startedPlaying ? `Playing ${enqueuedAudioURL}.` : `Added ${enqueuedAudioURL} to the queue.`);
     },
 };
