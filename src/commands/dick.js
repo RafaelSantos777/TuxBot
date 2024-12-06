@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import BOT_EMOJIS from '../bot-emojis.js';
+import { BOT_EMOJIS } from '../bot-emojis.js';
 
 const BASE_DICK_SIZE_CENTIMETERS = 13.75;
 const MAX_EXTRA_DICK_SIZE_CENTIMETERS = 0.5;
@@ -29,15 +29,15 @@ function createDickReply(userDisplayName) {
 		const base_size = Math.random() * BASE_DICK_SIZE_CENTIMETERS + Math.random() * BASE_DICK_SIZE_CENTIMETERS;
 		const extra_size = Math.random() * MAX_EXTRA_DICK_SIZE_CENTIMETERS;
 		const multiplier = Math.random() < MULTIPLIER_CHANCE ? Math.pow(Math.random() * MAX_BASE_MULTIPLER, MULTIPLIER_EXPONENT) : 1;
-		const final_size = (base_size * multiplier + extra_size).toFixed(1);
+		const final_size = base_size * multiplier + extra_size;
 		return final_size;
 	}
 
-	function formatSizeWithUnits() {
-		if (dickSizeCentimeters >= 100.0)
+	function formatDickSizeWithUnits() {
+		if (dickSizeCentimeters >= 100)
 			return `${(dickSizeCentimeters / 100).toFixed(2)} m`;
 		else
-			return `${dickSizeCentimeters} cm`;
+			return `${dickSizeCentimeters.toFixed(1)} cm`;
 	}
 
 	function getDickShape() {
@@ -53,11 +53,11 @@ function createDickReply(userDisplayName) {
 			return BOT_EMOJIS.OMEGALUL;
 		else if (dickSizeCentimeters <= SMALL_DICK_SIZE_CENTIMETERS)
 			return BOT_EMOJIS.KEKW;
-		return '';
+		throw new Error('Unreachable code executed.');
 	}
 
 	const dickSizeCentimeters = generateRandomDickSizeCentimeters();
 	const emoji = getEmoji();
-	return `${userDisplayName}'s dick is **${formatSizeWithUnits()}** long.${emoji ? ' ' : ''}${emoji}\n**${getDickShape()}**`;
+	return `${userDisplayName}'s dick is **${formatDickSizeWithUnits()}** long.${emoji ? ' ' : ''}${emoji}\n**${getDickShape()}**`;
 }
 
