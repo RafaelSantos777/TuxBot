@@ -13,7 +13,7 @@ export default {
             .setRequired(true)),
     /**
     * @param {ChatInputCommandInteraction} interaction
-    */
+    */   
     async execute(interaction) { // TODO Check permission
         const guildId = interaction.guildId;
         const audioManager = getAudioManager(guildId);
@@ -32,7 +32,7 @@ export default {
                 await interaction.reply({ content: `${error.message}`, ephemeral: true });
                 return;
             }
-            throw new Error();
+            throw new Error(error.message);
         }
         if (!voiceConnection)
             joinVoiceChannel(userVoiceChannel);

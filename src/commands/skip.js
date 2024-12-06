@@ -13,9 +13,6 @@ export default {
     async execute(interaction) {
         const audioManager = getAudioManager(interaction.guildId);
         const wasSkipped = audioManager.skip();
-        if (wasSkipped)
-            await interaction.reply('Skipped.');
-        else
-            await interaction.reply({ content: 'No audio to skip.', ephemeral: true });
+        await interaction.reply({ content: wasSkipped ? 'Skipped.' : 'No audio to skip.', ephemeral: !wasSkipped });
     },
 };
