@@ -53,7 +53,7 @@ function createDickReply(userDisplayName) {
 			return BOT_EMOJIS.OMEGALUL;
 		else if (dickSizeCentimeters <= SMALL_DICK_SIZE_CENTIMETERS)
 			return BOT_EMOJIS.KEKW;
-		throw new Error('Unreachable code executed.');
+		return '';
 	}
 
 	const dickSizeCentimeters = generateRandomDickSizeCentimeters();
