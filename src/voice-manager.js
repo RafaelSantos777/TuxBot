@@ -10,25 +10,25 @@ import {
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
 const STREAM_BUFFER_SIZE = 8 << 20;
 const YOUTUBE_SHORT_URL_DOMAIN = 'https://youtu.be/';
-const guildAudioManagers = new Map();
+const guildTrackManagers = new Map();
 
 export function setupVoiceManager() {
-    getClient().guilds.cache.forEach((guild) => addAudioManager(guild.id));
+    getClient().guilds.cache.forEach((guild) => addTrackManager(guild.id));
 }
 
 /**
 * @param {string} guildId
 */
-export function addAudioManager(guildId) {
-    guildAudioManagers.set(guildId, new AudioManager());
+export function addTrackManager(guildId) {
+    guildTrackManagers.set(guildId, new TrackManager());
 }
 
 /**
 * @param {string} guildId
-* @return {AudioManager}
+* @return {TrackManager}
 */
-export function getAudioManager(guildId) {
-    return guildAudioManagers.get(guildId);
+export function getTrackManager(guildId) {
+    return guildTrackManagers.get(guildId);
 }
 
 /**
@@ -73,7 +73,7 @@ export function joinVoiceChannel(voiceChannel) {
 * @param {string} guildId
 */
 function setupVoiceConnection(voiceConnection, guildId) {
-    const audioManager = getAudioManager(guildId);
+    const trackManager = getTrackManager(guildId);
     voiceConnection.on(VoiceConnectionStatus.Disconnected, async () => {
         try {
             await Promise.race([
@@ -85,14 +85,15 @@ function setupVoiceConnection(voiceConnection, guildId) {
         }
     });
     voiceConnection.on(VoiceConnectionStatus.Destroyed, () => {
-        audioManager.emptyQueue();
-        audioManager.audioPlayer.stop();
+        trackManager.emptyQueue();
+        trackManager.audioPlayer.stop();
     });
-    const audioPlayer = audioManager.audioPlayer;
+    const audioPlayer = trackManager.audioPlayer;
     voiceConnection.subscribe(audioPlayer);
 }
 
-class AudioManager { // TODO Implement /pause, /resume, /queue and /remove, playlists, age-restricted content
+// TODO Implement /pause, /resume, /queue, /remove, /loop, playlists, better UI, age-restricted content
+class TrackManager {
 
     constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
@@ -108,32 +109,32 @@ class AudioManager { // TODO Implement /pause, /resume, /queue and /remove, play
     /**
     * @param {string} query
     */
-    async enqueueAudio(query) {
+    async enqueueTrack(query) {
 
-        async function searchAudioURL() {
+        async function searchTrackURL() {
             const searchResults = await youtubeSearchAPI.GetListByKeyword(query, false, 1, [{ type: 'video' }]);
             if (searchResults.items.length === 0)
-                throw new AudioManagerError(`No results found for "${query}" on Youtube.`);
+                throw new TrackManagerError(`No results found for "${query}" on Youtube.`);
             return `${YOUTUBE_SHORT_URL_DOMAIN}${searchResults.items[0].id}`;
         }
 
-        async function checkAudioURLAccessibility() {
+        async function checkTrackURLAccessibility() {
             try {
-                await ytdl.getBasicInfo(audioURL);
+                await ytdl.getBasicInfo(trackURL);
             } catch (error) {
-                throw new AudioManagerError(isQueryValidURL
+                throw new TrackManagerError(isQueryValidURL
                     ? `I can't access that Youtube URL, it's probably age-restricted or private.`
                     : `I can't access the result I found for "${query}" on Youtube, it's probably age-restricted.`);
             }
         }
 
         const isQueryValidURL = ytdl.validateURL(query);
-        const audioURL = isQueryValidURL ? query : await searchAudioURL(query);
-        await checkAudioURLAccessibility();
-        const ytdlStream = ytdl(audioURL, { filter: 'audioonly', quality: 'highestaudio', dlChunkSize: 0, highWaterMark: STREAM_BUFFER_SIZE });
+        const trackURL = isQueryValidURL ? query : await searchTrackURL(query);
+        await checkTrackURLAccessibility();
+        const ytdlStream = ytdl(trackURL, { filter: 'audioonly', quality: 'highestaudio', dlChunkSize: 0, highWaterMark: STREAM_BUFFER_SIZE });
         const audioResource = createAudioResource(ytdlStream);
         this.queue.push(audioResource);
-        return audioURL;
+        return trackURL;
     }
 
     play() {
@@ -160,4 +161,4 @@ class AudioManager { // TODO Implement /pause, /resume, /queue and /remove, play
     }
 }
 
-export class AudioManagerError extends Error { }
+export class TrackManagerError extends Error { }

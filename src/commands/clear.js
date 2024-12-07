@@ -1,22 +1,22 @@
 import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
-import { getAudioManager } from '../voice-manager.js';
+import { getTrackManager } from '../voice-manager.js';
 
 
 export default {
     data: new SlashCommandBuilder()
         .setName('clear')
-        .setDescription('Clears the audio queue.')
+        .setDescription('Clears the track queue.')
         .setContexts([InteractionContextType.Guild]),
     /**
     * @param {ChatInputCommandInteraction} interaction
     */
     async execute(interaction) {
-        const audioManager = getAudioManager(interaction.guildId);
-        if (audioManager.isQueueEmpty()) {
+        const trackManager = getTrackManager(interaction.guildId);
+        if (trackManager.isQueueEmpty()) {
             await interaction.reply({ content: `There's no queue to clear.`, ephemeral: true });
             return;
         }
-        audioManager.emptyQueue();
+        trackManager.emptyQueue();
         await interaction.reply('Queue cleared.');
     },
 };

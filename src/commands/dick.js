@@ -29,8 +29,7 @@ function createDickReply(userDisplayName) {
 		const base_size = Math.random() * BASE_DICK_SIZE_CENTIMETERS + Math.random() * BASE_DICK_SIZE_CENTIMETERS;
 		const extra_size = Math.random() * MAX_EXTRA_DICK_SIZE_CENTIMETERS;
 		const multiplier = Math.random() < MULTIPLIER_CHANCE ? Math.pow(Math.random() * MAX_BASE_MULTIPLER, MULTIPLIER_EXPONENT) : 1;
-		const final_size = base_size * multiplier + extra_size;
-		return final_size;
+		return base_size * multiplier + extra_size;
 	}
 
 	function formatDickSizeWithUnits() {
