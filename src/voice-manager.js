@@ -131,7 +131,7 @@ class TrackManager {
         const isQueryValidURL = ytdl.validateURL(query);
         const trackURL = isQueryValidURL ? query : await searchTrackURL(query);
         await checkTrackURLAccessibility();
-        const ytdlStream = ytdl(trackURL, { filter: 'audioonly', quality: 'highestaudio', dlChunkSize: 0, highWaterMark: STREAM_BUFFER_SIZE });
+        const ytdlStream = ytdl(trackURL, { filter: 'audioonly', quality: 'highestaudio', highWaterMark: STREAM_BUFFER_SIZE });
         const audioResource = createAudioResource(ytdlStream);
         this.queue.push(audioResource);
         return trackURL;
