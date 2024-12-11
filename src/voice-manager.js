@@ -9,7 +9,7 @@ import {
 
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
 const STREAM_BUFFER_SIZE = 8 << 20;
-const YOUTUBE_SHORT_URL_DOMAIN = 'https://youtu.be/';
+const YOUTUBE_SHORT_BASE_URL = 'https://youtu.be/';
 const guildTrackManagers = new Map();
 
 export function setupVoiceManager() {
@@ -54,7 +54,7 @@ export async function getInteractionUserVoiceChannel(interaction) {
 */
 export function joinVoiceChannel(voiceChannel) {
     const currentVoiceConnection = getVoiceConnection(voiceChannel.guildId);
-    if (currentVoiceConnection !== undefined) {
+    if (currentVoiceConnection) {
         currentVoiceConnection.joinConfig.channelId = voiceChannel.id;
         currentVoiceConnection.rejoin();
         return;
@@ -109,13 +109,13 @@ class TrackManager {
     /**
     * @param {string} query
     */
-    async enqueueTrack(query) {
+    async enqueueTrack(query) { // FIXME There's minor stuttering the moment /play is used
 
         async function searchTrackURL() {
             const searchResults = await youtubeSearchAPI.GetListByKeyword(query, false, 1, [{ type: 'video' }]);
             if (searchResults.items.length === 0)
                 throw new TrackManagerError(`No results found for "${query}" on Youtube.`);
-            return `${YOUTUBE_SHORT_URL_DOMAIN}${searchResults.items[0].id}`;
+            return `${YOUTUBE_SHORT_BASE_URL}${searchResults.items[0].id}`;
         }
 
         async function checkTrackURLAccessibility() {
@@ -131,7 +131,7 @@ class TrackManager {
         const isQueryValidURL = ytdl.validateURL(query);
         const trackURL = isQueryValidURL ? query : await searchTrackURL(query);
         await checkTrackURLAccessibility();
-        const ytdlStream = ytdl(trackURL, { filter: 'audioonly', quality: 'highestaudio', highWaterMark: STREAM_BUFFER_SIZE });
+        const ytdlStream = ytdl(trackURL, { filter: 'audioonly', quality: 'highestaudio', dlChunkSize: 0, highWaterMark: STREAM_BUFFER_SIZE });
         const audioResource = createAudioResource(ytdlStream);
         this.queue.push(audioResource);
         return trackURL;
