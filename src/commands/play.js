@@ -26,9 +26,7 @@ export default {
         const query = interaction.options.getString('query');
         let enqueuedTrackURL;
         try {
-            console.log(`Enqueuing track. Queue size: ${trackManager.queue.length}`);
             enqueuedTrackURL = await trackManager.enqueueTrack(query);
-            console.log(`Track enqueued. Queue size: ${trackManager.queue.length}`);
         } catch (error) {
             if (error instanceof TrackManagerError) {
                 await interaction.reply({ content: `${error.message}`, ephemeral: true });
@@ -39,7 +37,6 @@ export default {
         if (!voiceConnection)
             joinVoiceChannel(userVoiceChannel);
         const startedPlaying = trackManager.play();
-        console.log(`play() executed. Queue size: ${trackManager.queue.length}`);
         await interaction.reply(startedPlaying ? `Playing ${enqueuedTrackURL}.` : `Added ${enqueuedTrackURL} to the queue.`);
     },
 };

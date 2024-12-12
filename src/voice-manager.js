@@ -1,11 +1,12 @@
 import { BaseInteraction, StageChannel, VoiceChannel } from 'discord.js';
 import { getClient } from './client.js';
-import ytdl from '@distube/ytdl-core';
 import youtubeSearchAPI from 'youtube-search-api';
+import ytdl from '@distube/ytdl-core';
 import {
     AudioPlayerStatus, createAudioPlayer, createAudioResource, entersState, getVoiceConnection,
     joinVoiceChannel as discordJoinVoiceChannel, NoSubscriberBehavior, VoiceConnection, VoiceConnectionStatus,
 } from '@discordjs/voice';
+
 
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
 const STREAM_BUFFER_SIZE = 8 << 20;
