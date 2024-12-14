@@ -110,7 +110,7 @@ class TrackManager {
     /**
     * @param {string} query
     */
-    async enqueueTrack(query) { // FIXME There's minor stuttering the moment /play is used
+    async enqueueTrack(query) {
 
         async function searchTrackURL() {
             const searchResults = await youtubeSearchAPI.GetListByKeyword(query, false, 1, [{ type: 'video' }]);
