@@ -1,7 +1,7 @@
-import { getClient } from './client.js';
-import youtubeSearchAPI from 'youtube-search-api';
-import ytdl from '@distube/ytdl-core';
 import { AudioPlayerStatus, createAudioPlayer, createAudioResource, NoSubscriberBehavior, } from '@discordjs/voice';
+import ytdl from '@distube/ytdl-core';
+import youtubeSearchAPI from 'youtube-search-api';
+import { getClient } from './client.js';
 
 const STREAM_BUFFER_SIZE = 8 << 20;
 const YOUTUBE_SHORT_BASE_URL = 'https://youtu.be/';

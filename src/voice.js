@@ -1,9 +1,10 @@
-import { BaseInteraction, StageChannel, VoiceChannel } from 'discord.js';
-import { getClient } from './client.js';
+import { BaseInteraction, VoiceChannel } from 'discord.js';
 import {
     entersState, getVoiceConnection, joinVoiceChannel as discordJoinVoiceChannel,
     VoiceConnection, VoiceConnectionStatus,
 } from '@discordjs/voice';
+import { getClient } from './client.js';
+import { getTrackManager } from './track-manager.js';
 
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
 

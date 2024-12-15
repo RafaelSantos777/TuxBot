@@ -1,8 +1,8 @@
 import 'dotenv/config';
-import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import path from 'path';
 import fs from 'fs';
 import { pathToFileURL } from 'url';
+import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import { addTrackManager } from './track-manager.js';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
