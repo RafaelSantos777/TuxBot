@@ -1,11 +1,11 @@
 import { login, logout, setupClient } from './client.js';
-import { setupVoiceManager } from './voice-manager.js';
+import { setupTrackManagers } from './track-manager.js';
 
 async function main() {
     try {
         await setupClient();
         await login();
-        setupVoiceManager();
+        setupTrackManagers();
         console.log('Client logged in successfully.');
     } catch (error) {
         console.error(error);

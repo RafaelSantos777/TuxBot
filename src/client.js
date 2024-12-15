@@ -3,7 +3,7 @@ import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } 
 import path from 'path';
 import fs from 'fs';
 import { pathToFileURL } from 'url';
-import { addTrackManager } from './voice-manager.js';
+import { addTrackManager } from './track-manager.js';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
 const { BOT_TOKEN, APPLICATION_ID } = process.env;

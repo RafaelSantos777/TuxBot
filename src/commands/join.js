@@ -1,5 +1,5 @@
 import { ChannelType, ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
-import { getInteractionUserVoiceChannel, isInVoiceChannel, joinVoiceChannel } from '../voice-manager.js';
+import { getInteractionUserVoiceChannel, isInVoiceChannel, joinVoiceChannel } from '../voice.js';
 
 export default {
 	data: new SlashCommandBuilder()
