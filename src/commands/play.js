@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import { getVoiceConnection } from '@discordjs/voice';
-import { TrackManagerError, getTrackManager } from '../track-manager.js';
+import { getTrackManager, TrackManagerError } from '../track-manager.js';
 import { getInteractionUserVoiceChannel, joinVoiceChannel } from '../voice.js';
 
 export default {

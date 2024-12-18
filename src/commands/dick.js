@@ -33,10 +33,9 @@ function createDickReply(userDisplayName) {
 	}
 
 	function formatDickSizeWithUnits() {
-		if (dickSizeCentimeters >= 100)
-			return `${(dickSizeCentimeters / 100).toFixed(2)} m`;
-		else
-			return `${dickSizeCentimeters.toFixed(1)} cm`;
+		return dickSizeCentimeters >= 100
+			? `${(dickSizeCentimeters / 100).toFixed(2)} m`
+			: `${dickSizeCentimeters.toFixed(1)} cm`;
 	}
 
 	function getDickShape() {

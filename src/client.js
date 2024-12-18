@@ -9,7 +9,7 @@ const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
 const { BOT_TOKEN, APPLICATION_ID } = process.env;
 const CLIENT_INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.MessageContent];
 const client = new Client({ intents: CLIENT_INTENTS });
-const commands = new Map();
+const commandMap = new Map();
 
 export function getClient() {
     return client;
@@ -23,7 +23,7 @@ export async function setupClient() {
             const command = (await import(fileURL)).default;
             if (!command.data instanceof SlashCommandBuilder || !command.execute instanceof Function)
                 throw new Error(`${fileName} is not properly configured.`);
-            commands.set(command.data.name, command);
+            commandMap.set(command.data.name, command);
         }
     }
 
@@ -31,7 +31,7 @@ export async function setupClient() {
         const rest = new REST().setToken(BOT_TOKEN);
         await rest.put(
             Routes.applicationCommands(APPLICATION_ID),
-            { body: (Array.from(commands.values()).map(value => value.data)) },
+            { body: (Array.from(commandMap.values()).map(value => value.data)) },
         );
     }
 
@@ -39,7 +39,7 @@ export async function setupClient() {
         client.on(Events.InteractionCreate, async interaction => {
             if (!interaction.isChatInputCommand())
                 return;
-            const command = commands.get(interaction.commandName);
+            const command = commandMap.get(interaction.commandName);
             if (!command)
                 return;
             try {

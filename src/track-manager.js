@@ -1,4 +1,4 @@
-import { AudioPlayerStatus, createAudioPlayer, createAudioResource, NoSubscriberBehavior, } from '@discordjs/voice';
+import { AudioPlayerStatus, createAudioPlayer, createAudioResource, NoSubscriberBehavior } from '@discordjs/voice';
 import ytdl from '@distube/ytdl-core';
 import youtubeSearchAPI from 'youtube-search-api';
 import { getClient } from './client.js';
