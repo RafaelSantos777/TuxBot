@@ -4,10 +4,12 @@ import fs from 'fs';
 import { pathToFileURL } from 'url';
 import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import { addTrackManager } from './track-manager.js';
+import { DEFAULT_PREFIX, getMessageCommandName, setPrefix } from './prefix-manager.js';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
 const { BOT_TOKEN, APPLICATION_ID } = process.env;
 const CLIENT_INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.MessageContent];
+const COMMAND_ERROR_REPLY_OPTIONS = { content: 'There was an unexpected error while executing this command!', ephemeral: true };
 const client = new Client({ intents: CLIENT_INTENTS });
 const commandMap = new Map();
 
@@ -47,12 +49,26 @@ export async function setupClient() {
             } catch (error) {
                 console.error(error);
                 if (interaction.replied || interaction.deferred)
-                    await interaction.followUp({ content: 'There was an unexpected error while executing this command!', ephemeral: true });
+                    await interaction.followUp(COMMAND_ERROR_REPLY_OPTIONS);
                 else
-                    await interaction.reply({ content: 'There was an unexpected error while executing this command!', ephemeral: true });
+                    await interaction.reply(COMMAND_ERROR_REPLY_OPTIONS);
             }
         });
-        client.on(Events.GuildCreate, (guild) => { addTrackManager(guild.id); });
+        client.on(Events.MessageCreate, async message => {
+            const command = commandMap.get(getMessageCommandName(message));
+            if (!command)
+                return;
+            try {
+                await command.execute(message);
+            } catch (error) {
+                console.error(error);
+                await message.reply(COMMAND_ERROR_REPLY_OPTIONS);
+            }
+        });
+        client.on(Events.GuildCreate, guild => {
+            addTrackManager(guild.id);
+            setPrefix(guild.id, DEFAULT_PREFIX);
+        });
     }
 
     await setupCommands();

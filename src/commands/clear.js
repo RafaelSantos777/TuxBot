@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
 import { getTrackManager } from '../track-manager.js';
 
 
@@ -8,15 +8,15 @@ export default {
         .setDescription('Clears the track queue.')
         .setContexts([InteractionContextType.Guild]),
     /**
-    * @param {ChatInputCommandInteraction} interaction
+    * @param {ChatInputCommandInteraction | Message} context
     */
-    async execute(interaction) {
-        const trackManager = getTrackManager(interaction.guildId);
+    async execute(context) {
+        const trackManager = getTrackManager(context.guildId);
         if (trackManager.isQueueEmpty()) {
-            await interaction.reply({ content: `There's no queue to clear.`, ephemeral: true });
+            await context.reply({ content: `There's no queue to clear.`, ephemeral: true });
             return;
         }
         trackManager.emptyQueue();
-        await interaction.reply('Queue cleared.');
+        await context.reply('Queue cleared.');
     },
 };

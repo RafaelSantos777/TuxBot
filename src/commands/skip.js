@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
 import { getTrackManager } from '../track-manager.js';
 
 export default {
@@ -7,11 +7,11 @@ export default {
         .setDescription('Skips the current track.')
         .setContexts([InteractionContextType.Guild]),
     /**
-    * @param {ChatInputCommandInteraction} interaction
+    * @param {ChatInputCommandInteraction | Message} context
     */
-    async execute(interaction) {
-        const trackManager = getTrackManager(interaction.guildId);
+    async execute(context) {
+        const trackManager = getTrackManager(context.guildId);
         const wasSkipped = trackManager.skip();
-        await interaction.reply({ content: wasSkipped ? 'Track skipped.' : 'No track to skip.', ephemeral: !wasSkipped });
+        await context.reply({ content: wasSkipped ? 'Track skipped.' : 'No track to skip.', ephemeral: !wasSkipped });
     },
 };

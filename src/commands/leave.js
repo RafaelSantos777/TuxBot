@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
 import { getVoiceConnection } from '@discordjs/voice';
 
 export default {
@@ -7,16 +7,16 @@ export default {
 		.setDescription('Leaves the current voice channel.')
 		.setContexts([InteractionContextType.Guild]),
 	/**
-	* @param {ChatInputCommandInteraction} interaction
+	* @param {ChatInputCommandInteraction | Message} context
 	*/
-	async execute(interaction) {
-		const voiceConnection = getVoiceConnection(interaction.guildId);
+	async execute(context) {
+		const voiceConnection = getVoiceConnection(context.guildId);
 		if (!voiceConnection) {
-			await interaction.reply({ content: `I'm not in a voice channel.`, ephemeral: true });
+			await context.reply({ content: `I'm not in a voice channel.`, ephemeral: true });
 			return;
 		}
 		voiceConnection.destroy();
-		await interaction.reply(`Bye bye!`);
+		await context.reply(`Bye bye!`);
 	},
 };
 

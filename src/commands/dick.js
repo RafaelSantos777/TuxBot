@@ -1,5 +1,5 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { BOT_EMOJIS } from '../bot-emojis.js';
+import { ChatInputCommandInteraction, Message, SlashCommandBuilder } from 'discord.js';
+import EMOJIS from "../../data/emojis.json" with {type: "json"};
 
 const BASE_DICK_SIZE_CENTIMETERS = 13.75;
 const MAX_EXTRA_DICK_SIZE_CENTIMETERS = 0.5;
@@ -16,10 +16,11 @@ export default {
 		.setName('dick')
 		.setDescription('Measures your dick.'),
 	/**
-	* @param {ChatInputCommandInteraction} interaction
+	* @param {ChatInputCommandInteraction | Message} context
 	*/
-	async execute(interaction) {
-		await interaction.reply(`${createDickReply(interaction.user.displayName)}`);
+	async execute(context) {
+		const user = context instanceof Message ? context.author : context.user;
+		await context.reply(`${createDickReply(user.displayName)}`);
 	},
 };
 
@@ -44,13 +45,13 @@ function createDickReply(userDisplayName) {
 
 	function getEmoji() {
 		if (dickSizeCentimeters >= HUGE_DICK_SIZE_CENTIMETERS)
-			return BOT_EMOJIS.MONKAW;
+			return EMOJIS.MONKAW;
 		else if (dickSizeCentimeters >= BIG_DICK_SIZE_CENTIMETERS)
-			return BOT_EMOJIS.POG;
+			return EMOJIS.POG;
 		else if (dickSizeCentimeters <= TINY_DICK_SIZE_CENTIMETERS)
-			return BOT_EMOJIS.OMEGALUL;
+			return EMOJIS.OMEGALUL;
 		else if (dickSizeCentimeters <= SMALL_DICK_SIZE_CENTIMETERS)
-			return BOT_EMOJIS.KEKW;
+			return EMOJIS.KEKW;
 		return '';
 	}
 

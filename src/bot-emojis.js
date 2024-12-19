@@ -1,6 +1,0 @@
-export const BOT_EMOJIS = {
-    KEKW: '<:kekw:1311869286012420127>',
-    MONKAW: '<:monkaw:1311878080234520606>',
-    OMEGALUL: '<:omegalul:1311861787263500338>',
-    POG: '<:pog:1311869250222161960>',
-};

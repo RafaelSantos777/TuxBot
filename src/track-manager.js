@@ -8,7 +8,7 @@ const YOUTUBE_SHORT_BASE_URL = 'https://youtu.be/';
 const guildTrackManagers = new Map();
 
 export function setupTrackManagers() {
-    getClient().guilds.cache.forEach((guild) => addTrackManager(guild.id));
+    getClient().guilds.cache.forEach(guild => addTrackManager(guild.id));
 }
 
 /**

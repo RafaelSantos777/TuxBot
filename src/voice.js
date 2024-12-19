@@ -1,4 +1,4 @@
-import { BaseInteraction, VoiceChannel } from 'discord.js';
+import { BaseInteraction, Guild, Message, VoiceChannel } from 'discord.js';
 import {
     entersState, getVoiceConnection, joinVoiceChannel as discordJoinVoiceChannel,
     VoiceConnection, VoiceConnectionStatus,
@@ -16,12 +16,21 @@ export function isInVoiceChannel(voiceChannel) {
 }
 
 /**
-* @param {BaseInteraction} interaction
+* @param {BaseInteraction | Message} context
 */
-export async function getInteractionUserVoiceChannel(interaction) {
-    const guildMember = await interaction.guild.members.fetch(interaction.user.id);
+export async function getContextUserVoiceChannel(context) {
+    const user = context instanceof Message ? context.author : context.user;
+    const guildMember = await context.guild.members.fetch(user.id);
     const voiceBasedChannel = guildMember.voice.channel;
     return voiceBasedChannel instanceof VoiceChannel ? voiceBasedChannel : null;
+}
+
+/**
+* @param {Guild} guild
+* @param {string} voiceChannelName
+*/
+export function getGuildVoiceChannelByName(guild, voiceChannelName) {
+    return guild.channels.cache.find(channel => channel.name === voiceChannelName && channel instanceof VoiceChannel);
 }
 
 /**
