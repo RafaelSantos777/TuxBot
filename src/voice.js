@@ -30,7 +30,10 @@ export async function getContextUserVoiceChannel(context) {
 * @param {string} voiceChannelName
 */
 export function getGuildVoiceChannelByName(guild, voiceChannelName) {
-    return guild.channels.cache.find(channel => channel.name === voiceChannelName && channel instanceof VoiceChannel);
+    return guild.channels.cache.find(channel =>
+        channel.name.toLowerCase() === voiceChannelName.toLowerCase()
+        && channel instanceof VoiceChannel
+    );
 }
 
 /**

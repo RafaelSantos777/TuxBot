@@ -17,7 +17,7 @@ export default {
     /**
     * @param {ChatInputCommandInteraction | Message} context
     */
-    async execute(context) { // TODO Check permission
+    async execute(context) { // TODO Check permission // TODO Surpress embeds if message contains embeds
         const guildId = context.guildId;
         const trackManager = getTrackManager(guildId);
         const voiceConnection = getVoiceConnection(guildId);
