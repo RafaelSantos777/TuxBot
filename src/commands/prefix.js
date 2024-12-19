@@ -9,8 +9,7 @@ export default {
         .addStringOption(option => option
             .setName('prefix')
             .setDescription('My new prefix for this server. Leave blank to simply check the current prefix.')
-            .setRequired(false)
-        ),
+            .setRequired(false)),
     /**
     * @param {ChatInputCommandInteraction | Message} context
     */
@@ -32,7 +31,7 @@ export default {
                 await context.reply({ content: `${error.message}`, ephemeral: true });
                 return;
             }
-            throw new Error(error.message);
+            throw error;
         }
     },
 };

@@ -27,7 +27,7 @@ export function getTrackManager(guildId) {
 }
 
 // TODO Implement /pause, /resume, /queue, /remove, /loop, playlists, better UI, age-restricted content
-class TrackManager {
+export class TrackManager {
 
     constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });

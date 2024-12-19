@@ -39,7 +39,7 @@ export function setPrefix(guildId, prefix) {
 export function getMessageCommandName(message) {
     const prefix = guildPrefixes.get(message.guildId);
     if (!prefix || !message.content.startsWith(prefix))
-        return undefined;
+        return null;
     const prefixAndCommandName = message.content.split(' ', 1)[0];
     return prefixAndCommandName.substring(prefix.length).toLowerCase();
 }

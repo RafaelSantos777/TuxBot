@@ -11,8 +11,7 @@ export default {
 			.setName('channel')
 			.setDescription('The channel to join.')
 			.setRequired(false)
-			.addChannelTypes(ChannelType.GuildVoice)
-		),
+			.addChannelTypes(ChannelType.GuildVoice)),
 	/**
 	* @param {ChatInputCommandInteraction | Message} context
 	*/

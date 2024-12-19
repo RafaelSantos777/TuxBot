@@ -26,6 +26,8 @@ export async function setupClient() {
             if (!command.data instanceof SlashCommandBuilder || !command.execute instanceof Function)
                 throw new Error(`${fileName} is not properly configured.`);
             commandMap.set(command.data.name, command);
+            for (const alias of command.aliases || [])
+                commandMap.set(alias, command);
         }
     }
 

@@ -6,6 +6,7 @@ export default {
         .setName('skip')
         .setDescription('Skips the current track.')
         .setContexts([InteractionContextType.Guild]),
+    aliases: ['s'],
     /**
     * @param {ChatInputCommandInteraction | Message} context
     */
