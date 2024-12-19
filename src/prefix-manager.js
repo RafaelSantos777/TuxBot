@@ -3,10 +3,9 @@ import fs from "fs";
 import guildPrefixesJSON from "../data/guild-prefixes.json" with {type: "json"};
 import { Message } from "discord.js";
 
-const guildPrefixes = new Map(Object.entries(guildPrefixesJSON));
-export const DEFAULT_PREFIX = '!';
 const MAX_PREFIX_LENGTH = 10;
 const PREFIX_REGEX = new RegExp(/^[\w/!?=+\-.,;:*#&^~%$@<>«»()\[\]{}]*$/);
+const guildPrefixes = new Map(Object.entries(guildPrefixesJSON));
 
 /**
 * @param {string} guildId

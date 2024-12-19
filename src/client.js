@@ -4,14 +4,13 @@ import fs from 'fs';
 import { pathToFileURL } from 'url';
 import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import { addTrackManager } from './track-manager.js';
-import { DEFAULT_PREFIX, getMessageCommandName, setPrefix } from './prefix-manager.js';
+import { getMessageCommandName, setPrefix } from './prefix-manager.js';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
 const { BOT_TOKEN, APPLICATION_ID } = process.env;
 const CLIENT_INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.MessageContent];
 const COMMAND_ERROR_REPLY_OPTIONS = { content: 'There was an unexpected error while executing this command!', ephemeral: true };
 const client = new Client({ intents: CLIENT_INTENTS });
-const commandMap = new Map();
 
 export function getClient() {
     return client;
@@ -68,12 +67,11 @@ export async function setupClient() {
                 await message.reply(COMMAND_ERROR_REPLY_OPTIONS);
             }
         });
-        client.on(Events.GuildCreate, guild => {
-            addTrackManager(guild.id);
-            setPrefix(guild.id, DEFAULT_PREFIX);
-        });
+        client.on(Events.GuildCreate, guild => { addTrackManager(guild.id); });
     }
+
     const commands = [];
+    const commandMap = new Map();
     await setupCommands();
     await deployCommands();
     setupEventHandlers();
