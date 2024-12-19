@@ -25,6 +25,7 @@ export async function setupClient() {
             const command = (await import(fileURL)).default;
             if (!command.data instanceof SlashCommandBuilder || !command.execute instanceof Function)
                 throw new Error(`${fileName} is not properly configured.`);
+            commands.push(command);
             commandMap.set(command.data.name, command);
             for (const alias of command.aliases || [])
                 commandMap.set(alias, command);
@@ -35,7 +36,7 @@ export async function setupClient() {
         const rest = new REST().setToken(BOT_TOKEN);
         await rest.put(
             Routes.applicationCommands(APPLICATION_ID),
-            { body: (Array.from(commandMap.values()).map(value => value.data)) },
+            { body: (commands.map(command => command.data)) },
         );
     }
 
@@ -72,7 +73,7 @@ export async function setupClient() {
             setPrefix(guild.id, DEFAULT_PREFIX);
         });
     }
-
+    const commands = [];
     await setupCommands();
     await deployCommands();
     setupEventHandlers();
