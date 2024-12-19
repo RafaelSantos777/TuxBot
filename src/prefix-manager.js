@@ -41,7 +41,7 @@ export function getMessageCommandName(message) {
     if (!prefix || !message.content.startsWith(prefix))
         return undefined;
     const prefixAndCommandName = message.content.split(' ', 1)[0];
-    return prefixAndCommandName.substring(prefix.length);
+    return prefixAndCommandName.substring(prefix.length).toLowerCase();
 }
 
 /**

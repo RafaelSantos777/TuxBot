@@ -35,7 +35,6 @@ export default {
             }
         } else
             query = context.options.getString('query');
-
         let enqueuedTrackURL;
         try {
             enqueuedTrackURL = await trackManager.enqueueTrack(query);
