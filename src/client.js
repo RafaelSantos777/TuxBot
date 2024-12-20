@@ -4,7 +4,7 @@ import fs from 'fs';
 import { pathToFileURL } from 'url';
 import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import { addTrackManager } from './track-manager.js';
-import { getMessageCommandName, setPrefix } from './prefix-manager.js';
+import { getMessageCommandName } from './prefix-manager.js';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
 const { BOT_TOKEN, APPLICATION_ID } = process.env;
@@ -24,7 +24,7 @@ export async function setupClient() {
             const command = (await import(fileURL)).default;
             if (!command.data instanceof SlashCommandBuilder || !command.execute instanceof Function)
                 throw new Error(`${fileName} is not properly configured.`);
-            commands.push(command);
+            commandData.push(command.data);
             commandMap.set(command.data.name, command);
             for (const alias of command.aliases || [])
                 commandMap.set(alias, command);
@@ -33,10 +33,7 @@ export async function setupClient() {
 
     async function deployCommands() {
         const rest = new REST().setToken(BOT_TOKEN);
-        await rest.put(
-            Routes.applicationCommands(APPLICATION_ID),
-            { body: (commands.map(command => command.data)) },
-        );
+        await rest.put(Routes.applicationCommands(APPLICATION_ID), { body: commandData });
     }
 
     function setupEventHandlers() {
@@ -70,7 +67,7 @@ export async function setupClient() {
         client.on(Events.GuildCreate, guild => { addTrackManager(guild.id); });
     }
 
-    const commands = [];
+    const commandData = [];
     const commandMap = new Map();
     await setupCommands();
     await deployCommands();

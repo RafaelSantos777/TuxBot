@@ -3,8 +3,8 @@ import fs from "fs";
 import guildPrefixesJSON from "../data/guild-prefixes.json" with {type: "json"};
 import { Message } from "discord.js";
 
-const MAX_PREFIX_LENGTH = 10;
 const PREFIX_REGEX = new RegExp(/^[\w/!?=+\-.,;:*#&^~%$@<>«»()\[\]{}]*$/);
+const MAX_PREFIX_LENGTH = 10;
 const guildPrefixes = new Map(Object.entries(guildPrefixesJSON));
 
 /**

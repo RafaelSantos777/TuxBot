@@ -20,7 +20,7 @@ export default {
             const currentPrefix = getPrefix(guildId);
             await context.reply(currentPrefix
                 ? `My prefix for this server is: **${currentPrefix}**`
-                : `My prefix for this server hasn't been defined yet. Use **/prefix** to define it.`);
+                : `My prefix for this server hasn't been defined yet.`);
             return;
         }
         try {
