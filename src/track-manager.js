@@ -80,7 +80,7 @@ export class TrackManager {
     }
 
     skip() {
-        if (this.isQueueEmpty() && this.audioPlayer.state.status === AudioPlayerStatus.Idle)
+        if (this.audioPlayer.state.status === AudioPlayerStatus.Idle)
             return false;
         this.audioPlayer.stop();
         return true;
