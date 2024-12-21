@@ -9,7 +9,7 @@ export default {
 		.setContexts([InteractionContextType.Guild])
 		.addChannelOption(option => option
 			.setName('channel')
-			.setDescription('The channel to join.')
+			.setDescription('The voice channel to join.')
 			.setRequired(false)
 			.addChannelTypes(ChannelType.GuildVoice)),
 	/**

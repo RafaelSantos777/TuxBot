@@ -31,8 +31,8 @@ export async function getContextUserVoiceChannel(context) {
 */
 export function getGuildVoiceChannelByName(guild, voiceChannelName) {
     return guild.channels.cache.find(channel =>
-        channel.name.toLowerCase() === voiceChannelName.toLowerCase()
-        && channel instanceof VoiceChannel
+        channel instanceof VoiceChannel
+        && channel.name.toLowerCase() === voiceChannelName.toLowerCase()
     );
 }
 
@@ -62,6 +62,7 @@ export function joinVoiceChannel(voiceChannel) {
 function setupVoiceConnection(voiceConnection, guildId) {
     const trackManager = getTrackManager(guildId);
     const audioPlayer = trackManager.audioPlayer;
+    voiceConnection.subscribe(audioPlayer);
     voiceConnection.on(VoiceConnectionStatus.Disconnected, async () => {
         try {
             await Promise.race([
@@ -76,5 +77,4 @@ function setupVoiceConnection(voiceConnection, guildId) {
         trackManager.emptyQueue();
         audioPlayer.stop();
     });
-    voiceConnection.subscribe(audioPlayer);
 }

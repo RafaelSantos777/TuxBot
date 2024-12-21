@@ -24,7 +24,7 @@ export async function setupClient() {
             const command = (await import(fileURL)).default;
             if (!command.data instanceof SlashCommandBuilder || !command.execute instanceof Function)
                 throw new Error(`${fileName} is not properly configured.`);
-            commandData.push(command.data);
+            commandsData.push(command.data);
             commandMap.set(command.data.name, command);
             for (const alias of command.aliases || [])
                 commandMap.set(alias, command);
@@ -33,7 +33,7 @@ export async function setupClient() {
 
     async function deployCommands() {
         const rest = new REST().setToken(BOT_TOKEN);
-        await rest.put(Routes.applicationCommands(APPLICATION_ID), { body: commandData });
+        await rest.put(Routes.applicationCommands(APPLICATION_ID), { body: commandsData });
     }
 
     function setupEventHandlers() {
@@ -67,7 +67,7 @@ export async function setupClient() {
         client.on(Events.GuildCreate, guild => { addTrackManager(guild.id); });
     }
 
-    const commandData = [];
+    const commandsData = [];
     const commandMap = new Map();
     await setupCommands();
     await deployCommands();

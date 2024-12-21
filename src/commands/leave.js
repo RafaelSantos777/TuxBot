@@ -19,4 +19,3 @@ export default {
 		await context.reply(`Bye bye!`);
 	},
 };
-

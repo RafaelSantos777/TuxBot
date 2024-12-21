@@ -26,7 +26,7 @@ export function getTrackManager(guildId) {
     return guildTrackManagers.get(guildId);
 }
 
-// TODO Implement /pause, /resume, /queue, /remove, /loop, playlists, better UI, age-restricted content
+// TODO Implement /pause, /resume, /queue, /remove, /loop, /nowplaying, playlists, better UI
 export class TrackManager {
 
     constructor() {

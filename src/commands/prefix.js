@@ -4,7 +4,7 @@ import { getMessageCommandOptions, getPrefix, PrefixManagerError, setPrefix } fr
 export default {
     data: new SlashCommandBuilder()
         .setName('prefix')
-        .setDescription('Check my prefix for this server or set a new one.')
+        .setDescription('Set my prefix for this server or check the current one.')
         .setContexts([InteractionContextType.Guild])
         .addStringOption(option => option
             .setName('prefix')

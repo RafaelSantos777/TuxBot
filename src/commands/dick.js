@@ -59,4 +59,3 @@ function createDickReply(userDisplayName) {
 	const emoji = getEmoji();
 	return `${userDisplayName}'s dick is **${formatDickSizeWithUnits()}** long.${emoji ? ' ' : ''}${emoji}\n**${getDickShape()}**`;
 }
-
