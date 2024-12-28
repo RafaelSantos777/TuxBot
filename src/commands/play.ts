@@ -1,9 +1,9 @@
 import { ChatInputCommandInteraction, InteractionContextType, Message, SlashCommandBuilder, VoiceChannel } from 'discord.js';
 import { getVoiceConnection } from '@discordjs/voice';
 import { getTrackManager, TrackManager, TrackManagerError } from '../track-manager.js';
-import { getContextUserVoiceChannel, joinVoiceChannel } from '../voice.js';
-import { getMessageCommandOptions } from '../prefix-manager.js';
-import { Command } from '../types/command.js';
+import { getCommandContextUserVoiceChannel, joinVoiceChannel } from '../voice.js';
+import { extractCommandOptions } from '../prefix-manager.js';
+import { Command, CommandContext } from '../types/command.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -15,11 +15,11 @@ export default {
             .setDescription('Youtube search term or Youtube video URL.')
             .setRequired(true)),
     aliases: ['p'],
-    async execute(context: ChatInputCommandInteraction | Message<true>) { // TODO Check permission // TODO Surpress embeds if relevant
+    async execute(context: CommandContext) { // TODO Check permission // TODO Surpress embeds if relevant
         const guildId = context.guildId as string;
         const trackManager = getTrackManager(guildId);
         const voiceConnection = getVoiceConnection(guildId);
-        const userVoiceChannel = await getContextUserVoiceChannel(context);
+        const userVoiceChannel = await getCommandContextUserVoiceChannel(context);
         if (!voiceConnection && !userVoiceChannel) {
             await context.reply({ content: 'Either you or I must be in a voice channel.', ephemeral: true });
             return;
@@ -36,7 +36,7 @@ export default {
 
 async function enqueueTrackFromContext(context: ChatInputCommandInteraction | Message<true>, trackManager: TrackManager) {
     const query = context instanceof Message
-        ? getMessageCommandOptions(context)
+        ? extractCommandOptions(context)
         : context.options.getString('query');
     if (!query) {
         context.reply({ content: 'You must provide a Youtube search term or a Youtube video URL', ephemeral: true });

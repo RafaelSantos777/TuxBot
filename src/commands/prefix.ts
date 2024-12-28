@@ -1,6 +1,6 @@
-import { ChatInputCommandInteraction, InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
-import { getMessageCommandOptions, getPrefix, PrefixManagerError, setPrefix } from '../prefix-manager.js';
-import { Command } from '../types/command.js';
+import { InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
+import { extractCommandOptions, getPrefix, PrefixManagerError, setPrefix } from '../prefix-manager.js';
+import { Command, CommandContext } from '../types/command.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -11,8 +11,8 @@ export default {
             .setName('prefix')
             .setDescription('My new prefix for this server. Leave blank to simply check the current prefix.')
             .setRequired(false)),
-    async execute(context: ChatInputCommandInteraction | Message<true>) {
-        const selectedPrefix = context instanceof Message ? getMessageCommandOptions(context) : context.options.getString('prefix');
+    async execute(context: CommandContext) {
+        const selectedPrefix = context instanceof Message ? extractCommandOptions(context) : context.options.getString('prefix');
         const guildId = context.guildId as string;
         if (!selectedPrefix) {
             const currentPrefix = getPrefix(guildId);

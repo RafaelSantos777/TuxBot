@@ -25,7 +25,7 @@ export function setPrefix(guildId: string, prefix: string) {
     fs.writeFileSync("data/guild-prefixes.json", JSON.stringify(Object.fromEntries(guildPrefixes), null, 4));
 }
 
-export function getMessageCommandName(message: Message): string | null {
+export function extractCommandName(message: Message): string | null {
     const guildId = message.guildId;
     if (!guildId)
         return null;
@@ -36,7 +36,7 @@ export function getMessageCommandName(message: Message): string | null {
     return prefixAndCommandName.substring(prefix.length).toLowerCase();
 }
 
-export function getMessageCommandOptions(message: Message): string {
+export function extractCommandOptions(message: Message): string {
     const splitMessage = message.content.split(' ');
     return splitMessage.slice(1).join(' ').trim();
 }

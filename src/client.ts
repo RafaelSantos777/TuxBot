@@ -4,7 +4,7 @@ import fs from 'fs';
 import { pathToFileURL } from 'url';
 import { Client, Events, GatewayIntentBits, Message, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import { addTrackManager } from './track-manager.js';
-import { getMessageCommandName } from './prefix-manager.js';
+import { extractCommandName } from './prefix-manager.js';
 import { Command } from './types/command.js';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
@@ -13,7 +13,7 @@ const CLIENT_INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessage
 const COMMAND_ERROR_REPLY_OPTIONS = { content: 'There was an unexpected error while executing this command!', ephemeral: true };
 const client = new Client({ intents: CLIENT_INTENTS });
 
-export function getClient() {
+export function getClient(): Client<boolean> {
     return client;
 }
 
@@ -53,7 +53,7 @@ export async function setupClient() {
             }
         });
         client.on(Events.MessageCreate, async message => {
-            const messageCommandName = getMessageCommandName(message);
+            const messageCommandName = extractCommandName(message);
             if (!messageCommandName)
                 return;
             const command = commandMap.get(messageCommandName);

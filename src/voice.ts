@@ -1,10 +1,11 @@
-import { BaseInteraction, ClientUser, Guild, Message, VoiceChannel } from 'discord.js';
+import { ClientUser, Guild, Message, VoiceChannel } from 'discord.js';
 import {
     entersState, getVoiceConnection, joinVoiceChannel as discordJoinVoiceChannel,
     VoiceConnection, VoiceConnectionStatus,
 } from '@discordjs/voice';
 import { getClient } from './client.js';
-import { getTrackManager, TrackManager } from './track-manager.js';
+import { getTrackManager } from './track-manager.js';
+import { CommandContext } from './types/command.js';
 
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
 
@@ -12,11 +13,9 @@ export function isInVoiceChannel(voiceChannel: VoiceChannel): boolean {
     return voiceChannel.members.has((getClient().user as ClientUser).id);
 }
 
-export async function getContextUserVoiceChannel(context: BaseInteraction | Message) {
+export async function getCommandContextUserVoiceChannel(context: CommandContext): Promise<VoiceChannel | null> {
     const user = context instanceof Message ? context.author : context.user;
-    const guild = context.guild;
-    if (!guild)
-        return null;
+    const guild = context.guild as Guild;
     const guildMember = await guild.members.fetch(user.id);
     const voiceBasedChannel = guildMember.voice.channel;
     return voiceBasedChannel instanceof VoiceChannel ? voiceBasedChannel : null;

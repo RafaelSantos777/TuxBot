@@ -1,7 +1,7 @@
-import { ChannelType, ChatInputCommandInteraction, InteractionContextType, Message, SlashCommandBuilder, VoiceChannel } from 'discord.js';
-import { getContextUserVoiceChannel, getGuildVoiceChannelByName, isInVoiceChannel, joinVoiceChannel } from '../voice.js';
-import { getMessageCommandOptions } from '../prefix-manager.js';
-import { Command } from '../types/command.js';
+import { ChannelType, InteractionContextType, Message, SlashCommandBuilder, VoiceChannel } from 'discord.js';
+import { getCommandContextUserVoiceChannel, getGuildVoiceChannelByName, isInVoiceChannel, joinVoiceChannel } from '../voice.js';
+import { extractCommandOptions } from '../prefix-manager.js';
+import { Command, CommandContext } from '../types/command.js';
 
 export default {
 	data: new SlashCommandBuilder()
@@ -13,10 +13,10 @@ export default {
 			.setDescription('The voice channel to join.')
 			.setRequired(false)
 			.addChannelTypes(ChannelType.GuildVoice)),
-	async execute(context: ChatInputCommandInteraction | Message<true>) { // TODO Check permission
-		const userVoiceChannel = await getContextUserVoiceChannel(context);
+	async execute(context: CommandContext) { // TODO Check permission
+		const userVoiceChannel = await getCommandContextUserVoiceChannel(context);
 		const selectedVoiceChannel = context instanceof Message
-			? getGuildVoiceChannelByName(context.guild, getMessageCommandOptions(context))
+			? getGuildVoiceChannelByName(context.guild, extractCommandOptions(context))
 			: context.options.getChannel('channel') as VoiceChannel;
 		const voiceChannel = selectedVoiceChannel ? selectedVoiceChannel : userVoiceChannel;
 		if (!voiceChannel) {

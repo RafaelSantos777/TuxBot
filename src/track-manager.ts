@@ -30,11 +30,11 @@ export class TrackManager {
 
     constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
-        this.#setupAudioPlayer();
+        this.setupAudioPlayer();
         this.queue = [];
     }
 
-    #setupAudioPlayer() {
+    private setupAudioPlayer() {
         this.audioPlayer.on(AudioPlayerStatus.Idle, () => { this.play(); });
         this.audioPlayer.on('error', error => { console.error(error); });
     }
