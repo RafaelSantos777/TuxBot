@@ -3,8 +3,6 @@ import ytdl from '@distube/ytdl-core';
 import youtubeSearchAPI from 'youtube-search-api';
 import { getClient } from './client.js';
 
-const STREAM_BUFFER_SIZE = 8 << 20;
-const YOUTUBE_SHORT_BASE_URL = 'https://youtu.be/';
 const guildTrackManagers: Map<string, TrackManager> = new Map();
 
 export function setupTrackManagers() {
@@ -25,6 +23,8 @@ export function getTrackManager(guildId: string): TrackManager {
 // TODO Implement /pause, /resume, /queue, /remove, /loop, /nowplaying, playlists, better UI
 export class TrackManager {
 
+    private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio', highWaterMark: 8 << 20 };
+    private static readonly YOUTUBE_SHORT_BASE_URL = 'https://youtu.be/';
     audioPlayer: AudioPlayer;
     queue: AudioResource[];
 
@@ -45,7 +45,7 @@ export class TrackManager {
             const searchResults = await youtubeSearchAPI.GetListByKeyword(query, false, 1, [{ type: 'video' }]);
             if (searchResults.items.length === 0)
                 throw new TrackManagerError(`No results found for "${query}" on Youtube.`);
-            return `${YOUTUBE_SHORT_BASE_URL}${searchResults.items[0].id}`;
+            return `${TrackManager.YOUTUBE_SHORT_BASE_URL}${searchResults.items[0].id}`;
         }
 
         async function checkTrackURLAccessibility() {
@@ -61,7 +61,7 @@ export class TrackManager {
         const isQueryValidURL = ytdl.validateURL(query);
         const trackURL = isQueryValidURL ? query : await searchTrackURL();
         await checkTrackURLAccessibility();
-        const ytdlStream = ytdl(trackURL, { filter: 'audioonly', quality: 'highestaudio', highWaterMark: STREAM_BUFFER_SIZE });
+        const ytdlStream = ytdl(trackURL, TrackManager.DOWNLOAD_OPTIONS);
         const audioResource = createAudioResource(ytdlStream);
         this.queue.push(audioResource);
         return trackURL;
