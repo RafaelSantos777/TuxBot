@@ -1,5 +1,6 @@
-import { ChatInputCommandInteraction, Message, SlashCommandBuilder } from 'discord.js';
+import { Message, SlashCommandBuilder } from 'discord.js';
 import EMOJIS from "../../data/emojis.json" with {type: "json"};
+import { Command } from '../types/command.js';
 
 const BASE_DICK_SIZE_CENTIMETERS = 13.75;
 const MAX_EXTRA_DICK_SIZE_CENTIMETERS = 0.5;
@@ -15,16 +16,13 @@ export default {
 	data: new SlashCommandBuilder()
 		.setName('dick')
 		.setDescription('Measures your dick.'),
-	/**
-	* @param {ChatInputCommandInteraction | Message} context
-	*/
 	async execute(context) {
 		const user = context instanceof Message ? context.author : context.user;
 		await context.reply(`${createDickReply(user.displayName)}`);
 	},
-};
+} as Command;
 
-function createDickReply(userDisplayName) {
+function createDickReply(userDisplayName: string) {
 
 	function generateRandomDickSizeCentimeters() {
 		const base_size = Math.random() * BASE_DICK_SIZE_CENTIMETERS + Math.random() * BASE_DICK_SIZE_CENTIMETERS;
