@@ -24,7 +24,7 @@ export default {
             await context.reply({ content: 'Either you or I must be in a voice channel.', ephemeral: true });
             return;
         }
-        const enqueuedTrackURL = await enqueueTrackFromContext(context, trackManager);
+        const enqueuedTrackURL = await enqueueTrack(context, trackManager);
         if (!enqueuedTrackURL)
             return;
         if (!voiceConnection)
@@ -34,10 +34,8 @@ export default {
     },
 } as Command;
 
-async function enqueueTrackFromContext(context: ChatInputCommandInteraction | Message<true>, trackManager: TrackManager) {
-    const query = context instanceof Message
-        ? extractCommandOptions(context)
-        : context.options.getString('query');
+async function enqueueTrack(context: CommandContext, trackManager: TrackManager) {
+    const query = context instanceof Message ? extractCommandOptions(context) : context.options.getString('query');
     if (!query) {
         context.reply({ content: 'You must provide a Youtube search term or a Youtube video URL', ephemeral: true });
         return null;

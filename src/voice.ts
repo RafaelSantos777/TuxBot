@@ -59,7 +59,7 @@ function setupVoiceConnection(voiceConnection: VoiceConnection, guildId: string)
         }
     });
     voiceConnection.on(VoiceConnectionStatus.Destroyed, () => {
-        trackManager.emptyQueue();
+        trackManager.clearQueue();
         audioPlayer.stop();
     });
 }

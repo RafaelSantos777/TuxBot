@@ -13,7 +13,7 @@ export default {
             await context.reply({ content: `There's no queue to clear.`, ephemeral: true });
             return;
         }
-        trackManager.emptyQueue();
+        trackManager.clearQueue();
         await context.reply('Queue cleared.');
     }
 } as Command;

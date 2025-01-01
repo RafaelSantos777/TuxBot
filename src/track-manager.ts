@@ -24,7 +24,7 @@ export function getTrackManager(guildId: string): TrackManager {
 export class TrackManager {
 
     private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio', highWaterMark: 8 << 20 };
-    private static readonly YOUTUBE_SHORT_BASE_URL = 'https://youtu.be/';
+    private static readonly YOUTUBE_VIDEO_BASE_URL = 'https://youtu.be/';
     audioPlayer: AudioPlayer;
     queue: AudioResource[];
 
@@ -45,7 +45,7 @@ export class TrackManager {
             const searchResults = await youtubeSearchAPI.GetListByKeyword(query, false, 1, [{ type: 'video' }]);
             if (searchResults.items.length === 0)
                 throw new TrackManagerError(`No results found for "${query}" on Youtube.`);
-            return `${TrackManager.YOUTUBE_SHORT_BASE_URL}${searchResults.items[0].id}`;
+            return `${TrackManager.YOUTUBE_VIDEO_BASE_URL}${searchResults.items[0].id}`;
         }
 
         async function checkTrackURLAccessibility() {
@@ -82,7 +82,7 @@ export class TrackManager {
         return true;
     }
 
-    emptyQueue() {
+    clearQueue() {
         this.queue = [];
     }
 
