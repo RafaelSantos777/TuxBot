@@ -41,7 +41,7 @@ function createDickReply(userDisplayName: string): string {
 		return `8${'='.repeat(dickSizeCentimeters / 2)}D`;
 	}
 
-	function getEmoji(): string {
+	function getEmoji(): string | null {
 		if (dickSizeCentimeters >= HUGE_DICK_SIZE_CENTIMETERS)
 			return EMOJIS.MONKAW;
 		else if (dickSizeCentimeters >= BIG_DICK_SIZE_CENTIMETERS)
@@ -50,10 +50,10 @@ function createDickReply(userDisplayName: string): string {
 			return EMOJIS.OMEGALUL;
 		else if (dickSizeCentimeters <= SMALL_DICK_SIZE_CENTIMETERS)
 			return EMOJIS.KEKW;
-		return '';
+		return null;
 	}
 
 	const dickSizeCentimeters = generateRandomDickSizeCentimeters();
 	const emoji = getEmoji();
-	return `${userDisplayName}'s dick is **${formatDickSizeWithUnits()}** long.${emoji ? ' ' : ''}${emoji}\n**${createDickShape()}**`;
+	return `${userDisplayName}'s dick is **${formatDickSizeWithUnits()}** long.${emoji ? ' ' + emoji : ''}\n**${createDickShape()}**`;
 }

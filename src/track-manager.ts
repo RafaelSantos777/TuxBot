@@ -29,7 +29,7 @@ export class TrackManager {
     queue: AudioResource[];
 
     constructor() {
-        this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
+        this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play }, debug: true });
         this.setupAudioPlayer();
         this.queue = [];
     }

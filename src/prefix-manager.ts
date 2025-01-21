@@ -25,18 +25,15 @@ export function setPrefix(guildId: string, prefix: string) {
     fs.writeFileSync("data/guild-prefixes.json", JSON.stringify(Object.fromEntries(guildPrefixes), null, 4));
 }
 
-export function extractCommandName(message: Message): string | null {
-    const guildId = message.guildId;
-    if (!guildId)
-        return null;
-    const prefix = guildPrefixes.get(guildId);
+export function extractCommandName(message: Message<true>): string | null {
+    const prefix = guildPrefixes.get(message.guildId);
     if (!prefix || !message.content.startsWith(prefix))
         return null;
     const prefixAndCommandName = message.content.split(' ', 1)[0];
     return prefixAndCommandName.substring(prefix.length).toLowerCase();
 }
 
-export function extractCommandOptions(message: Message): string {
+export function extractCommandOptions(message: Message<true>): string {
     const splitMessage = message.content.split(' ');
     return splitMessage.slice(1).join(' ').trim();
 }

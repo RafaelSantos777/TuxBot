@@ -13,8 +13,8 @@ const CLIENT_INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessage
 const COMMAND_ERROR_REPLY_OPTIONS = { content: 'There was an unexpected error while executing this command!', ephemeral: true };
 const client = new Client({ intents: CLIENT_INTENTS });
 
-export function getClient(): Client<boolean> {
-    return client;
+export function getClient(): Client<true> {
+    return client as Client<true>;
 }
 
 export async function setupClient() {
@@ -53,6 +53,8 @@ export async function setupClient() {
             }
         });
         client.on(Events.MessageCreate, async message => {
+            if (!message.inGuild())
+                return;
             const messageCommandName = extractCommandName(message);
             if (!messageCommandName)
                 return;
@@ -60,7 +62,7 @@ export async function setupClient() {
             if (!command)
                 return;
             try {
-                await command.execute(message as Message<true>);
+                await command.execute(message);
             } catch (error) {
                 console.error(error);
                 await message.reply(COMMAND_ERROR_REPLY_OPTIONS);

@@ -1,8 +1,5 @@
-import { ClientUser, Guild, Message, VoiceChannel } from 'discord.js';
-import {
-    entersState, getVoiceConnection, joinVoiceChannel as discordJoinVoiceChannel,
-    VoiceConnection, VoiceConnectionStatus,
-} from '@discordjs/voice';
+import { Guild, Message, VoiceChannel } from 'discord.js';
+import { entersState, getVoiceConnection, joinVoiceChannel as createVoiceConnection, VoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
 import { getClient } from './client.js';
 import { getTrackManager } from './track-manager.js';
 import { CommandContext } from './types/command.js';
@@ -10,7 +7,7 @@ import { CommandContext } from './types/command.js';
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
 
 export function isInVoiceChannel(voiceChannel: VoiceChannel): boolean {
-    return voiceChannel.members.has((getClient().user as ClientUser).id);
+    return voiceChannel.members.has(getClient().user.id);
 }
 
 export async function getCommandContextUserVoiceChannel(context: CommandContext): Promise<VoiceChannel | null> {
@@ -35,7 +32,7 @@ export function joinVoiceChannel(voiceChannel: VoiceChannel) {
         currentVoiceConnection.rejoin();
         return;
     }
-    const newVoiceConnection = discordJoinVoiceChannel({
+    const newVoiceConnection = createVoiceConnection({
         channelId: voiceChannel.id,
         guildId: voiceChannel.guildId,
         adapterCreator: voiceChannel.guild.voiceAdapterCreator,
