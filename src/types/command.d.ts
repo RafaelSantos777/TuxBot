@@ -2,8 +2,8 @@ import { ChatInputCommandInteraction, Message, SlashCommandBuilder } from 'disco
 
 export type CommandContext = ChatInputCommandInteraction | Message<true>;
 
-export type Command = {
+export interface Command {
     data: SlashCommandBuilder;
     aliases?: string[];
-    async execute(context: CommandContext);
+    execute(context: CommandContext): Promise<void>;
 };

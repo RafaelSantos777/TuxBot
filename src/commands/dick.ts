@@ -1,5 +1,5 @@
 import { Message, SlashCommandBuilder } from 'discord.js';
-import EMOJIS from "../../data/emojis.json" with {type: "json"};
+import EMOJIS from '../../data/emojis.json' with {type: 'json'};
 import { Command, CommandContext } from '../types/command.js';
 
 const BASE_DICK_SIZE_CENTIMETERS = 13.75;
