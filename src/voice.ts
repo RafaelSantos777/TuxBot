@@ -18,11 +18,12 @@ export async function getCommandContextUserVoiceChannel(context: CommandContext)
     return voiceBasedChannel instanceof VoiceChannel ? voiceBasedChannel : null;
 }
 
-export function getGuildVoiceChannelByName(guild: Guild, voiceChannelName: string): VoiceChannel | undefined {
-    return guild.channels.cache.find(channel =>
+export function getGuildVoiceChannelByName(guild: Guild, voiceChannelName: string): VoiceChannel | null {
+    const voiceChannel = guild.channels.cache.find(channel =>
         channel instanceof VoiceChannel
         && channel.name.toLowerCase() === voiceChannelName.toLowerCase()
-    ) as VoiceChannel | undefined;
+    );
+    return voiceChannel instanceof VoiceChannel ? voiceChannel : null;
 }
 
 export function joinVoiceChannel(voiceChannel: VoiceChannel) {
