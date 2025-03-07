@@ -1,5 +1,5 @@
-import fs from "fs";
-import guildPrefixesJSON from "../data/guild-prefixes.json" with { type: "json" };
+import fs from 'fs';
+import guildPrefixesJSON from '../data/guild-prefixes.json' with { type: 'json' };
 const PREFIX_REGEX = new RegExp(/^[\w/!?=+\-.,;:*#&^~%$@<>«»()\[\]{}]*$/);
 const MAX_PREFIX_LENGTH = 10;
 const guildPrefixes = new Map(Object.entries(guildPrefixesJSON));
@@ -15,7 +15,7 @@ export function setPrefix(guildId, prefix) {
     }
     validatePrefix();
     guildPrefixes.set(guildId, prefix);
-    fs.writeFileSync("data/guild-prefixes.json", JSON.stringify(Object.fromEntries(guildPrefixes), null, 4));
+    fs.writeFileSync('data/guild-prefixes.json', JSON.stringify(Object.fromEntries(guildPrefixes), null, 4));
 }
 export function extractCommandName(message) {
     const prefix = guildPrefixes.get(message.guildId);

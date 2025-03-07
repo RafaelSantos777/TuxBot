@@ -1,5 +1,5 @@
 import { Message, SlashCommandBuilder } from 'discord.js';
-import EMOJIS from "../../data/emojis.json" with { type: "json" };
+import EMOJIS from '../../data/emojis.json' with { type: 'json' };
 const BASE_DICK_SIZE_CENTIMETERS = 13.75;
 const MAX_EXTRA_DICK_SIZE_CENTIMETERS = 0.5;
 const MAX_BASE_MULTIPLER = 2;

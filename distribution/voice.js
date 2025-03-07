@@ -14,8 +14,9 @@ export async function getCommandContextUserVoiceChannel(context) {
     return voiceBasedChannel instanceof VoiceChannel ? voiceBasedChannel : null;
 }
 export function getGuildVoiceChannelByName(guild, voiceChannelName) {
-    return guild.channels.cache.find(channel => channel instanceof VoiceChannel
+    const voiceChannel = guild.channels.cache.find(channel => channel instanceof VoiceChannel
         && channel.name.toLowerCase() === voiceChannelName.toLowerCase());
+    return voiceChannel instanceof VoiceChannel ? voiceChannel : null;
 }
 export function joinVoiceChannel(voiceChannel) {
     const currentVoiceConnection = getVoiceConnection(voiceChannel.guildId);

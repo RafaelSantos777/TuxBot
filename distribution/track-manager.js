@@ -22,7 +22,7 @@ export class TrackManager {
     audioPlayer;
     queue;
     constructor() {
-        this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play }, debug: true });
+        this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
         this.setupAudioPlayer();
         this.queue = [];
     }
@@ -43,7 +43,7 @@ export class TrackManager {
             }
             catch (error) {
                 throw new TrackManagerError(isQueryValidURL
-                    ? `I can't access that Youtube URL, it's probably age-restricted or private.`
+                    ? `I can't access that Youtube URL, it's probably age-restricted, region-locked, or private.`
                     : `I can't access the result I found for "${query}" on Youtube, it's probably age-restricted.`);
             }
         }
