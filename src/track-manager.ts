@@ -23,7 +23,8 @@ export function getTrackManager(guildId: string): TrackManager {
 // TODO Implement /pause, /resume, /queue, /remove, /loop, /nowplaying, playlists, better UI
 export class TrackManager {
 
-    private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio', highWaterMark: 8 << 20 };
+    // NOTE: "filter" attribute is currently bugged in ytdl-core, so it's not being used
+    private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { quality: 'highestaudio', highWaterMark: 8 << 20 };
     private static readonly YOUTUBE_VIDEO_BASE_URL = 'https://youtu.be/';
     audioPlayer: AudioPlayer;
     queue: AudioResource[];
@@ -58,6 +59,14 @@ export class TrackManager {
             }
         }
 
+        function isURLPlaylist(url: string): boolean {
+            return url.includes('playlist?list=') || (url.includes('watch?v=') && url.includes('&list=') && !url.includes('&index='));
+        }
+
+        function getPlaylistId(playlistURL: string): string {
+            return playlistURL.split('list=')[1];
+        }
+
         const isQueryValidURL = ytdl.validateURL(query);
         const trackURL = isQueryValidURL ? query : await searchTrackURL();
         await checkTrackURLAccessibility();
@@ -70,7 +79,7 @@ export class TrackManager {
     play(): boolean {
         if (this.isQueueEmpty() || this.audioPlayer.state.status !== AudioPlayerStatus.Idle)
             return false;
-        const audioResource = this.queue.shift() as AudioResource;
+        const audioResource = this.queue.shift()!;
         this.audioPlayer.play(audioResource);
         return true;
     }

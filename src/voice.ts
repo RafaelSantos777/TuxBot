@@ -12,7 +12,7 @@ export function isInVoiceChannel(voiceChannel: VoiceChannel): boolean {
 
 export async function getCommandContextUserVoiceChannel(context: CommandContext): Promise<VoiceChannel | null> {
     const user = context instanceof Message ? context.author : context.user;
-    const guild = context.guild as Guild;
+    const guild = context.guild!;
     const guildMember = await guild.members.fetch(user.id);
     const voiceBasedChannel = guildMember.voice.channel;
     return voiceBasedChannel instanceof VoiceChannel ? voiceBasedChannel : null;

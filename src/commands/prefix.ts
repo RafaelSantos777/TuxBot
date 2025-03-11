@@ -13,7 +13,7 @@ export default {
             .setRequired(false)),
     async execute(context: CommandContext) {
         const selectedPrefix = context instanceof Message ? extractCommandOptions(context) : context.options.getString('prefix');
-        const guildId = context.guildId as string;
+        const guildId = context.guildId!;
         if (!selectedPrefix) {
             const currentPrefix = getPrefix(guildId);
             await context.reply(currentPrefix
