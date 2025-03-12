@@ -1,7 +1,8 @@
-import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, createAudioResource, NoSubscriberBehavior } from '@discordjs/voice';
+import { AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, NoSubscriberBehavior } from '@discordjs/voice';
 import ytdl from '@distube/ytdl-core';
 import youtubeSearchAPI from 'youtube-search-api';
 import { getClient } from './client.js';
+import { Track } from './types/track.js';
 
 const guildTrackManagers: Map<string, TrackManager> = new Map();
 
@@ -20,38 +21,55 @@ export function getTrackManager(guildId: string): TrackManager {
     return trackManager;
 }
 
-// TODO Implement /pause, /resume, /queue, /remove, /loop, /nowplaying, playlists, better UI
+// TODO Implement /pause, /resume, /queue, /remove, /loop, /nowplaying, better UI
 export class TrackManager {
 
-    // NOTE: "filter" attribute is currently bugged in ytdl-core, so it's not being used
+    // BUG "filter" attribute is currently bugged in ytdl-core, so it's not being used
     private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { quality: 'highestaudio', highWaterMark: 8 << 20 };
     private static readonly YOUTUBE_VIDEO_BASE_URL = 'https://youtu.be/';
+    private static readonly MAXIMUM_RETRY_ATTEMPTS = 5;
+    private static readonly RETRY_DELAY = 2000;
     audioPlayer: AudioPlayer;
-    queue: AudioResource[];
+    queue: Track[];
+    isRetrying: boolean;
 
     constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
         this.setupAudioPlayer();
         this.queue = [];
+        this.isRetrying = false;
     }
 
     private setupAudioPlayer() {
         this.audioPlayer.on(AudioPlayerStatus.Idle, () => { this.play(); });
-        this.audioPlayer.on('error', error => { console.error(error); });
+        this.audioPlayer.on('error', error => {
+            console.error(error);
+            const track = error.resource.metadata as Track;
+            if (!error.message.includes('Status code: 403') || track.retryAttempts >= TrackManager.MAXIMUM_RETRY_ATTEMPTS)
+                return;
+            this.isRetrying = true;
+            setTimeout(() => {
+                track.retryAttempts++;
+                this.isRetrying = false;
+                const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
+                const audioResource = createAudioResource(ytdlStream, { metadata: track });
+                this.audioPlayer.play(audioResource);
+            }, TrackManager.RETRY_DELAY);
+        });
     }
 
-    async enqueueTrack(query: string): Promise<string> {
+    async enqueueTrack(query: string): Promise<Track | number> {
 
-        async function searchTrackURL(): Promise<string> {
+        async function searchVideo(): Promise<string> {
             const searchResults = await youtubeSearchAPI.GetListByKeyword(query, false, 1, [{ type: 'video' }]);
             if (searchResults.items.length === 0)
                 throw new TrackManagerError(`No results found for "${query}" on Youtube.`);
-            return `${TrackManager.YOUTUBE_VIDEO_BASE_URL}${searchResults.items[0].id}`;
+            return searchResults.items[0].id;
         }
 
-        async function checkTrackURLAccessibility() {
+        async function checkTrackAccessibility() {
             try {
-                await ytdl.getBasicInfo(trackURL);
+                await youtubeSearchAPI.GetVideoDetails(videoId);
             } catch (error) {
                 throw new TrackManagerError(isQueryValidURL
                     ? `I can't access that Youtube URL, it's probably age-restricted, region-locked, or private.`
@@ -59,27 +77,39 @@ export class TrackManager {
             }
         }
 
-        function isURLPlaylist(url: string): boolean {
-            return url.includes('playlist?list=') || (url.includes('watch?v=') && url.includes('&list=') && !url.includes('&index='));
-        }
-
-        function getPlaylistId(playlistURL: string): string {
-            return playlistURL.split('list=')[1];
-        }
-
         const isQueryValidURL = ytdl.validateURL(query);
-        const trackURL = isQueryValidURL ? query : await searchTrackURL();
-        await checkTrackURLAccessibility();
-        const ytdlStream = ytdl(trackURL, TrackManager.DOWNLOAD_OPTIONS);
-        const audioResource = createAudioResource(ytdlStream);
-        this.queue.push(audioResource);
-        return trackURL;
+        const isQueryPlaylistURL = (query.includes('playlist?list=') || (query.includes('&list=') && !query.includes('&index=')));
+        if (isQueryPlaylistURL)
+            return await this.enqueuePlaylist(query);
+        const videoId = isQueryValidURL ? ytdl.getURLVideoID(query) : await searchVideo();
+        await checkTrackAccessibility();
+        const track = this.createTrack(videoId);
+        this.queue.push(track);
+        return track;
+    }
+
+    private async enqueuePlaylist(playlistURL: string): Promise<number> {
+        try {
+            const playlistId = playlistURL.split('list=')[1].split('&')[0];
+            var videos = (await youtubeSearchAPI.GetPlaylistData(playlistId)).items;
+        } catch (error) {
+            throw new TrackManagerError(`I can't access that Youtube playlist, it's probably private.`);
+        }
+        for (const video of videos)
+            this.queue.push(this.createTrack(video.id));
+        return videos.length;
+    }
+
+    private createTrack(videoId: string): Track { // TODO Change once UI is improved
+        return { url: `${TrackManager.YOUTUBE_VIDEO_BASE_URL}${videoId}`, retryAttempts: 0 };
     }
 
     play(): boolean {
-        if (this.isQueueEmpty() || this.audioPlayer.state.status !== AudioPlayerStatus.Idle)
+        if (this.isQueueEmpty() || this.audioPlayer.state.status !== AudioPlayerStatus.Idle || this.isRetrying)
             return false;
-        const audioResource = this.queue.shift()!;
+        const track = this.queue.shift()!;
+        const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
+        const audioResource = createAudioResource(ytdlStream, { metadata: track });
         this.audioPlayer.play(audioResource);
         return true;
     }

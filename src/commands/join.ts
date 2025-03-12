@@ -20,7 +20,7 @@ export default {
 			: context.options.getChannel('channel') as VoiceChannel;
 		const voiceChannel = selectedVoiceChannel ? selectedVoiceChannel : userVoiceChannel;
 		if (!voiceChannel) {
-			await context.reply({ content: 'You must be in a voice channel or select one.', ephemeral: true });
+			await context.reply({ content: 'You must be in a voice channel or select one.', ephemeral: true }); // TODO Deprecated ephemeral flag
 			return;
 		}
 		if (isInVoiceChannel(voiceChannel)) {

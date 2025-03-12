@@ -34,9 +34,7 @@ export function extractCommandName(message: Message<true>): string | null {
 }
 
 export function extractCommandOptions(message: Message<true>): string {
-    // return message.content.substring(message.content.indexOf(' ') + 1).trim(); // TODO Test this
-    const splitMessage = message.content.split(' ');
-    return splitMessage.slice(1).join(' ').trim();
+    return message.content.substring(message.content.indexOf(' ') + 1).trim();
 }
 
 export class PrefixManagerError extends Error { }

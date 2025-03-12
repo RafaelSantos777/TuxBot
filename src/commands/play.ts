@@ -15,7 +15,7 @@ export default {
             .setDescription('Youtube search term or Youtube video URL.')
             .setRequired(true)),
     aliases: ['p'],
-    async execute(context: CommandContext) { // TODO Check permission // FIXME Sometimes the bot doesn't play the track (user dependent, aparently)
+    async execute(context: CommandContext) { // TODO Check permission
         const guildId = context.guildId!;
         const trackManager = getTrackManager(guildId);
         const voiceConnection = getVoiceConnection(guildId);
@@ -24,13 +24,17 @@ export default {
             await context.reply({ content: 'Either you or I must be in a voice channel.', ephemeral: true });
             return;
         }
-        const enqueuedTrackURL = await enqueueTrack(context, trackManager);
-        if (!enqueuedTrackURL)
+        const enqueuedTrack = await enqueueTrack(context, trackManager);
+        if (!enqueuedTrack)
             return;
         if (!voiceConnection)
             joinVoiceChannel(userVoiceChannel!);
         const startedPlaying = trackManager.play();
-        await context.reply(startedPlaying ? `Playing ${enqueuedTrackURL}.` : `Added ${enqueuedTrackURL} to the queue.`);
+        if (typeof enqueuedTrack === 'number') {
+            await context.reply(`Added ${enqueuedTrack} track${enqueuedTrack === 1 ? '' : 's'} to the queue.`);
+            return;
+        }
+        await context.reply(startedPlaying ? `Playing ${enqueuedTrack.url}.` : `Added ${enqueuedTrack.url} to the queue.`);
     },
 } as Command;
 

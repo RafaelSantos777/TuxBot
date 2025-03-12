@@ -46,14 +46,18 @@ export async function setupClient() {
                 await command.execute(interaction);
             } catch (error) {
                 console.error(error);
-                if (interaction.replied || interaction.deferred)
-                    await interaction.followUp(COMMAND_ERROR_REPLY_OPTIONS);
-                else
-                    await interaction.reply(COMMAND_ERROR_REPLY_OPTIONS);
+                try {
+                    if (interaction.replied || interaction.deferred)
+                        await interaction.followUp(COMMAND_ERROR_REPLY_OPTIONS);
+                    else
+                        await interaction.reply(COMMAND_ERROR_REPLY_OPTIONS);
+                } catch (error) {
+                    console.error(error);
+                }
             }
         });
-        client.on(Events.MessageCreate, async message => {
-            if (!message.inGuild())
+        client.on(Events.MessageCreate, async message => { // TODO Check for permissions to send message to channel (this is different from replying to interactions)
+            if (!message.inGuild() || message.author.bot)
                 return;
             const messageCommandName = extractCommandName(message);
             if (!messageCommandName)
@@ -65,7 +69,11 @@ export async function setupClient() {
                 await command.execute(message);
             } catch (error) {
                 console.error(error);
-                await message.reply(COMMAND_ERROR_REPLY_OPTIONS);
+                try {
+                    await message.reply(COMMAND_ERROR_REPLY_OPTIONS);
+                } catch (error) {
+                    console.error(error);
+                }
             }
         });
         client.on(Events.GuildCreate, guild => { addTrackManager(guild.id); });
