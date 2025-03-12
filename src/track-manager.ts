@@ -71,17 +71,17 @@ export class TrackManager {
             try {
                 await youtubeSearchAPI.GetVideoDetails(videoId);
             } catch (error) {
-                throw new TrackManagerError(isQueryValidURL
+                throw new TrackManagerError(isQueryVideoURL
                     ? `I can't access that Youtube URL, it's probably age-restricted, region-locked, or private.`
                     : `I can't access the result I found for "${query}" on Youtube, it's probably age-restricted.`);
             }
         }
 
-        const isQueryValidURL = ytdl.validateURL(query);
+        const isQueryVideoURL = ytdl.validateURL(query);
         const isQueryPlaylistURL = (query.includes('playlist?list=') || (query.includes('&list=') && !query.includes('&index=')));
         if (isQueryPlaylistURL)
             return await this.enqueuePlaylist(query);
-        const videoId = isQueryValidURL ? ytdl.getURLVideoID(query) : await searchVideo();
+        const videoId = isQueryVideoURL ? ytdl.getURLVideoID(query) : await searchVideo();
         await checkTrackAccessibility();
         const track = this.createTrack(videoId);
         this.queue.push(track);
