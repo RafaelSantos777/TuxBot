@@ -10,7 +10,7 @@ export default {
 	async execute(context: CommandContext) {
 		const voiceConnection = (getVoiceConnection(context.guildId!));
 		if (!voiceConnection) {
-			await context.reply({ content: `I'm not in a voice channel.`, ephemeral: true });
+			await context.reply({ content: `I'm not in a voice channel. ❌`, ephemeral: true });
 			return;
 		}
 		voiceConnection.destroy();

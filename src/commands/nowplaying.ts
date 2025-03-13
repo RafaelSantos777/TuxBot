@@ -12,7 +12,7 @@ export default {
         const trackManager = getTrackManager(context.guildId!);
         const track = trackManager.getCurrentTrack();
         if (!track) {
-            await context.reply({ content: 'No track is currently playing.', ephemeral: true });
+            await context.reply({ content: 'No track is currently playing. ❌', ephemeral: true });
             return;
         }
         await context.reply(`Currently playing ${track.url}.`);

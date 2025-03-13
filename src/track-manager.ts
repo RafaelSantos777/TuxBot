@@ -122,6 +122,13 @@ export class TrackManager {
         return true;
     }
 
+    removeTrack(index: number): boolean {
+        if (Number.isNaN(index) || index < 0 || index >= this.queue.length)
+            return false;
+        this.queue.splice(index, 1);
+        return true;
+    }
+
     getCurrentTrack(): Track | null {
         return this.audioPlayer.state.status === AudioPlayerStatus.Idle ? null : this.audioPlayer.state.resource.metadata as Track;
     }

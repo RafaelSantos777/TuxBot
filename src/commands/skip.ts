@@ -11,6 +11,6 @@ export default {
     async execute(context: CommandContext) {
         const trackManager = getTrackManager(context.guildId!);
         const wasSkipped = trackManager.skip();
-        await context.reply({ content: wasSkipped ? 'Track skipped.' : 'No track to skip.', ephemeral: !wasSkipped });
+        await context.reply({ content: wasSkipped ? 'Track skipped.' : 'No track to skip. ❌', ephemeral: !wasSkipped });
     },
 } as Command;

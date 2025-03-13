@@ -21,7 +21,7 @@ export default {
         const voiceConnection = getVoiceConnection(guildId);
         const userVoiceChannel = await getCommandContextUserVoiceChannel(context);
         if (!voiceConnection && !userVoiceChannel) {
-            await context.reply({ content: 'Either you or I must be in a voice channel.', ephemeral: true });
+            await context.reply({ content: 'Either you or I must be in a voice channel. ❌', ephemeral: true });
             return;
         }
         const enqueuedTrack = await enqueueTrack(context, trackManager);
@@ -41,7 +41,7 @@ export default {
 async function enqueueTrack(context: CommandContext, trackManager: TrackManager) {
     const query = context instanceof Message ? extractCommandOptions(context) : context.options.getString('query');
     if (!query) {
-        context.reply({ content: 'You must provide a Youtube search term or a Youtube video URL', ephemeral: true });
+        context.reply({ content: 'You must provide a Youtube search term, video URL, or playlist URL. ❌', ephemeral: true });
         return null;
     }
     try {

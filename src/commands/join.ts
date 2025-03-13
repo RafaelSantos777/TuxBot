@@ -20,11 +20,11 @@ export default {
 			: context.options.getChannel('channel') as VoiceChannel;
 		const voiceChannel = selectedVoiceChannel ? selectedVoiceChannel : userVoiceChannel;
 		if (!voiceChannel) {
-			await context.reply({ content: 'You must be in a voice channel or select one.', ephemeral: true });
+			await context.reply({ content: 'You must be in a voice channel or select one. ❌', ephemeral: true });
 			return;
 		}
 		if (isInVoiceChannel(voiceChannel)) {
-			await context.reply({ content: `I'm already in ${voiceChannel}.`, ephemeral: true }); // TODO Ephemeral flags are deprecated
+			await context.reply({ content: `I'm already in ${voiceChannel}. ❌`, ephemeral: true }); // TODO Ephemeral flags are deprecated
 			return;
 		}
 		joinVoiceChannel(voiceChannel);

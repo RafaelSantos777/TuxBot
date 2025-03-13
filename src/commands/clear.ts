@@ -10,7 +10,7 @@ export default {
     async execute(context: CommandContext) {
         const trackManager = getTrackManager(context.guildId!);
         if (trackManager.isQueueEmpty()) {
-            await context.reply({ content: `There's no queue to clear.`, ephemeral: true });
+            await context.reply({ content: `No queue to clear. ❌`, ephemeral: true });
             return;
         }
         trackManager.clearQueue();
