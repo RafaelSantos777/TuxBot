@@ -122,10 +122,6 @@ export class TrackManager {
         return true;
     }
 
-    getAudioPlayer(): AudioPlayer {
-        return this.audioPlayer;
-    }
-
     getCurrentTrack(): Track | null {
         return this.audioPlayer.state.status === AudioPlayerStatus.Idle ? null : this.audioPlayer.state.resource.metadata as Track;
     }
