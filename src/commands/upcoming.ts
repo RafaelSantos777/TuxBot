@@ -9,14 +9,12 @@ export default {
         const replyTextLines = [
             '**UPCOMING FEATURES 📣**',
             '',
-            '- Pretty UI',
-            '- Spotify support',
+            '- Pretty UI (When showing tracks or the queue)',
             '',
             '**Commands:**',
             '- /queue - Lists the current queue',
-            '- /remove - Removes a track from at the specified position',
+            '- /remove - Removes a track from the queue at the specified position',
             '- /loop - Loops the current track or the queue',
-            '- /nowplaying - Shows the current track',
             '- /pause - Pauses the current track',
             '- /resume - Resumes the current track',
         ];

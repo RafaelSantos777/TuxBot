@@ -24,29 +24,30 @@ export function getTrackManager(guildId: string): TrackManager {
 // TODO Implement /pause, /resume, /queue, /remove, /loop, /nowplaying, better UI
 export class TrackManager {
 
-    // BUG "filter" attribute is currently bugged in ytdl-core, so it's not being used
+    // BUG "filter" attribute for ytdl.downloadOptions is currently bugged, so it's not being used
     private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { quality: 'highestaudio', highWaterMark: 8 << 20 };
     private static readonly YOUTUBE_VIDEO_BASE_URL = 'https://youtu.be/';
     private static readonly MAXIMUM_RETRY_ATTEMPTS = 5;
     private static readonly RETRY_DELAY = 2000;
-    audioPlayer: AudioPlayer;
-    queue: Track[];
-    isRetrying: boolean;
+    private readonly audioPlayer: AudioPlayer;
+    private isRetrying: boolean;
+    private queue: Track[];
 
     constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
-        this.setupAudioPlayer();
-        this.queue = [];
         this.isRetrying = false;
+        this.queue = [];
+        this.setupAudioPlayer();
     }
 
     private setupAudioPlayer() {
         this.audioPlayer.on(AudioPlayerStatus.Idle, () => { this.play(); });
         this.audioPlayer.on('error', error => {
-            console.error(error);
             const track = error.resource.metadata as Track;
-            if (!error.message.includes('Status code: 403') || track.retryAttempts >= TrackManager.MAXIMUM_RETRY_ATTEMPTS)
+            if (!error.message.includes('Status code: 403') || track.retryAttempts >= TrackManager.MAXIMUM_RETRY_ATTEMPTS) {
+                console.error(`Error occurred while playing track: ${error.message}`);
                 return;
+            }
             this.isRetrying = true;
             setTimeout(() => {
                 track.retryAttempts++;
@@ -69,7 +70,8 @@ export class TrackManager {
 
         async function checkTrackAccessibility() {
             try {
-                await youtubeSearchAPI.GetVideoDetails(videoId);
+                const test = await youtubeSearchAPI.GetVideoDetails(videoId); // TODO Remove
+                console.info(test);
             } catch (error) {
                 throw new TrackManagerError(isQueryVideoURL
                     ? `I can't access that Youtube URL, it's probably age-restricted, region-locked, or private.`
@@ -119,6 +121,14 @@ export class TrackManager {
             return false;
         this.audioPlayer.stop();
         return true;
+    }
+
+    getCurrentTrack(): Track | null {
+        return this.audioPlayer.state.status === AudioPlayerStatus.Idle ? null : this.audioPlayer.state.resource.metadata as Track;
+    }
+
+    getQueue(): Track[] {
+        return this.queue;
     }
 
     clearQueue() {

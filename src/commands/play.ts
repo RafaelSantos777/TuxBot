@@ -1,4 +1,4 @@
-import { InteractionContextType, Message, SlashCommandBuilder, VoiceChannel } from 'discord.js';
+import { InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
 import { getVoiceConnection } from '@discordjs/voice';
 import { getTrackManager, TrackManager, TrackManagerError } from '../track-manager.js';
 import { getCommandContextUserVoiceChannel, joinVoiceChannel } from '../voice.js';
