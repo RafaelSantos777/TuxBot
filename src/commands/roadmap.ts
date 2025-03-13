@@ -3,13 +3,13 @@ import { Command, CommandContext } from '../types/command.js';
 
 export default {
     data: new SlashCommandBuilder()
-        .setName('upcoming')
+        .setName('roadmap')
         .setDescription('Shows the upcoming features for the bot.'),
     async execute(context: CommandContext) {
         const replyTextLines = [
-            '**UPCOMING FEATURES 📣**',
+            '**UPCOMING FEATURES 📢**',
             '',
-            '- Pretty UI (When showing tracks or the queue)',
+            '- Pretty UI (when showing tracks or the queue)',
             '',
             '**Commands:**',
             '- /queue - Lists the current queue',

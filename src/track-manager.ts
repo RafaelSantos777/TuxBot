@@ -21,7 +21,7 @@ export function getTrackManager(guildId: string): TrackManager {
     return trackManager;
 }
 
-// TODO Implement /pause, /resume, /queue, /remove, /loop, /nowplaying, better UI
+// TODO Implement /pause, /resume, /queue, /remove, /loop, better UI
 export class TrackManager {
 
     // BUG "filter" attribute for ytdl.downloadOptions is currently bugged, so it's not being used
@@ -29,14 +29,14 @@ export class TrackManager {
     private static readonly YOUTUBE_VIDEO_BASE_URL = 'https://youtu.be/';
     private static readonly MAXIMUM_RETRY_ATTEMPTS = 5;
     private static readonly RETRY_DELAY = 2000;
-    private readonly audioPlayer: AudioPlayer;
+    readonly audioPlayer: AudioPlayer;
+    queue: Track[];
     private isRetrying: boolean;
-    private queue: Track[];
 
     constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
-        this.isRetrying = false;
         this.queue = [];
+        this.isRetrying = false;
         this.setupAudioPlayer();
     }
 
@@ -70,8 +70,7 @@ export class TrackManager {
 
         async function checkTrackAccessibility() {
             try {
-                const test = await youtubeSearchAPI.GetVideoDetails(videoId); // TODO Remove
-                console.info(test);
+                await youtubeSearchAPI.GetVideoDetails(videoId);
             } catch (error) {
                 throw new TrackManagerError(isQueryVideoURL
                     ? `I can't access that Youtube URL, it's probably age-restricted, region-locked, or private.`
@@ -102,7 +101,7 @@ export class TrackManager {
         return videos.length;
     }
 
-    private createTrack(videoId: string): Track { // TODO Change once UI is improved
+    private createTrack(videoId: string): Track {
         return { url: `${TrackManager.YOUTUBE_VIDEO_BASE_URL}${videoId}`, retryAttempts: 0 };
     }
 
@@ -123,12 +122,12 @@ export class TrackManager {
         return true;
     }
 
-    getCurrentTrack(): Track | null {
-        return this.audioPlayer.state.status === AudioPlayerStatus.Idle ? null : this.audioPlayer.state.resource.metadata as Track;
+    getAudioPlayer(): AudioPlayer {
+        return this.audioPlayer;
     }
 
-    getQueue(): Track[] {
-        return this.queue;
+    getCurrentTrack(): Track | null {
+        return this.audioPlayer.state.status === AudioPlayerStatus.Idle ? null : this.audioPlayer.state.resource.metadata as Track;
     }
 
     clearQueue() {
