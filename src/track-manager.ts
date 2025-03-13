@@ -60,7 +60,7 @@ export class TrackManager {
 
     async enqueueTrack(query: string): Promise<Track | number> {
 
-        async function searchVideo(): Promise<string> {
+        async function searchVideoId(): Promise<string> {
             const searchResults = await youtubeSearchAPI.GetListByKeyword(query, false, 1, [{ type: 'video' }]);
             if (searchResults.items.length === 0)
                 throw new TrackManagerError(`No results found for "${query}" on Youtube.`);
@@ -77,11 +77,11 @@ export class TrackManager {
             }
         }
 
-        const isQueryVideoURL = ytdl.validateURL(query);
         const isQueryPlaylistURL = (query.includes('playlist?list=') || (query.includes('&list=') && !query.includes('&index=')));
         if (isQueryPlaylistURL)
             return await this.enqueuePlaylist(query);
-        const videoId = isQueryVideoURL ? ytdl.getURLVideoID(query) : await searchVideo();
+        const isQueryVideoURL = ytdl.validateURL(query);
+        const videoId = isQueryVideoURL ? ytdl.getURLVideoID(query) : await searchVideoId();
         await checkTrackAccessibility();
         const track = this.createTrack(videoId);
         this.queue.push(track);

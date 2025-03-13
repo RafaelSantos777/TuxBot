@@ -12,7 +12,7 @@ export default {
         .setContexts([InteractionContextType.Guild])
         .addStringOption(option => option
             .setName('query')
-            .setDescription('Youtube search term or Youtube video URL.')
+            .setDescription('Youtube search term, video URL, or playlist URL.')
             .setRequired(true)),
     aliases: ['p'],
     async execute(context: CommandContext) { // TODO Check permission
