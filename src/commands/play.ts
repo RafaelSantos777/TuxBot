@@ -48,7 +48,7 @@ async function enqueueTrack(context: CommandContext, trackManager: TrackManager)
         return await trackManager.enqueueTrack(query);
     } catch (error) {
         if (error instanceof TrackManagerError) {
-            await context.reply({ content: `${error.message}`, ephemeral: true });
+            await context.reply({ content: `${error.message} ❌`, ephemeral: true });
             return null;
         }
         throw error;
