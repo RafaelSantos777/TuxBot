@@ -44,8 +44,7 @@ export function joinVoiceChannel(voiceChannel: VoiceChannel) {
 
 function setupVoiceConnection(voiceConnection: VoiceConnection, guildId: string) {
     const trackManager = getTrackManager(guildId);
-    const audioPlayer = trackManager.audioPlayer;
-    voiceConnection.subscribe(audioPlayer);
+    voiceConnection.subscribe(trackManager.audioPlayer);
     voiceConnection.on(VoiceConnectionStatus.Disconnected, async () => {
         try {
             await Promise.race([
@@ -56,9 +55,5 @@ function setupVoiceConnection(voiceConnection: VoiceConnection, guildId: string)
             voiceConnection.destroy();
         }
     });
-    voiceConnection.on(VoiceConnectionStatus.Destroyed, () => {
-        trackManager.clearQueue();
-        trackManager.currentTrack = null;
-        audioPlayer.stop();
-    });
+    voiceConnection.on(VoiceConnectionStatus.Destroyed, () => { trackManager.reset(); });
 }

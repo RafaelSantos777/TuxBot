@@ -21,7 +21,7 @@ export function getTrackManager(guildId: string): TrackManager {
     return trackManager;
 }
 
-// TODO Implement /pause, /resume, /queue, /loop, better UI
+// TODO Implement /pause, /resume, /queue, better UI
 export class TrackManager {
 
     readonly audioPlayer: AudioPlayer;
@@ -74,6 +74,8 @@ export class TrackManager {
             }
             this.isRetrying = true;
             setTimeout(() => {
+                if (!this.isRetrying)
+                    return;
                 track.retryAttempts++;
                 this.isRetrying = false;
                 this.playTrack(track);
@@ -162,6 +164,13 @@ export class TrackManager {
 
     isQueueEmpty(): boolean {
         return this.queue.length === 0;
+    }
+
+    reset() {
+        this.clearQueue();
+        this.currentTrack = null;
+        this.isRetrying = false;
+        this.audioPlayer.stop();
     }
 
 }
