@@ -21,30 +21,54 @@ export function getTrackManager(guildId: string): TrackManager {
     return trackManager;
 }
 
-// TODO Implement /pause, /resume, /queue, /remove, /loop, better UI
+// TODO Implement /pause, /resume, /queue, /loop, better UI
 export class TrackManager {
 
+    readonly audioPlayer: AudioPlayer;
+    queue: Track[];
+    currentTrack: Track | null;
+    loopMode: LoopMode;
+    private isRetrying: boolean;
     // BUG "filter" attribute for ytdl.downloadOptions is currently bugged, so it's not being used
     private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { quality: 'highestaudio', highWaterMark: 8 << 20 };
     private static readonly YOUTUBE_VIDEO_BASE_URL = 'https://youtu.be/';
     private static readonly MAXIMUM_RETRY_ATTEMPTS = 5;
-    private static readonly RETRY_DELAY = 2000;
-    readonly audioPlayer: AudioPlayer;
-    queue: Track[];
-    private isRetrying: boolean;
+    private static readonly RETRY_DELAY = 1500;
+    private static readonly UNAUTHORIZED_ERROR_MESSAGE = 'Status code: 403';
 
     constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
         this.queue = [];
+        this.currentTrack = null;
+        this.loopMode = LoopMode.OFF;
         this.isRetrying = false;
         this.setupAudioPlayer();
     }
 
     private setupAudioPlayer() {
-        this.audioPlayer.on(AudioPlayerStatus.Idle, () => { this.play(); });
+        this.audioPlayer.on(AudioPlayerStatus.Idle, () => {
+            if (this.isRetrying)
+                return;
+            const previousTrack = this.currentTrack;
+            this.currentTrack = null;
+            switch (this.loopMode) {
+                case LoopMode.OFF:
+                    this.play();
+                    break;
+                case LoopMode.TRACK:
+                    if (previousTrack)
+                        this.playTrack(previousTrack);
+                    break;
+                case LoopMode.QUEUE:
+                    if (previousTrack)
+                        this.queue.push(previousTrack);
+                    this.play();
+                    break;
+            }
+        });
         this.audioPlayer.on('error', error => {
             const track = error.resource.metadata as Track;
-            if (!error.message.includes('Status code: 403') || track.retryAttempts >= TrackManager.MAXIMUM_RETRY_ATTEMPTS) {
+            if (!error.message.includes(TrackManager.UNAUTHORIZED_ERROR_MESSAGE) || track.retryAttempts >= TrackManager.MAXIMUM_RETRY_ATTEMPTS) {
                 console.error(`Error occurred while playing track: ${error.message}`);
                 return;
             }
@@ -52,9 +76,7 @@ export class TrackManager {
             setTimeout(() => {
                 track.retryAttempts++;
                 this.isRetrying = false;
-                const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
-                const audioResource = createAudioResource(ytdlStream, { metadata: track });
-                this.audioPlayer.play(audioResource);
+                this.playTrack(track);
             }, TrackManager.RETRY_DELAY);
         });
     }
@@ -105,13 +127,18 @@ export class TrackManager {
         return { url: `${TrackManager.YOUTUBE_VIDEO_BASE_URL}${videoId}`, retryAttempts: 0 };
     }
 
+    private playTrack(track: Track) {
+        const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
+        const audioResource = createAudioResource(ytdlStream, { metadata: track });
+        this.currentTrack = track;
+        this.audioPlayer.play(audioResource);
+    }
+
     play(): boolean {
         if (this.isQueueEmpty() || this.audioPlayer.state.status !== AudioPlayerStatus.Idle || this.isRetrying)
             return false;
         const track = this.queue.shift()!;
-        const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
-        const audioResource = createAudioResource(ytdlStream, { metadata: track });
-        this.audioPlayer.play(audioResource);
+        this.playTrack(track);
         return true;
     }
 
@@ -129,10 +156,6 @@ export class TrackManager {
         return true;
     }
 
-    getCurrentTrack(): Track | null {
-        return this.audioPlayer.state.status === AudioPlayerStatus.Idle ? null : this.audioPlayer.state.resource.metadata as Track;
-    }
-
     clearQueue() {
         this.queue = [];
     }
@@ -140,6 +163,13 @@ export class TrackManager {
     isQueueEmpty(): boolean {
         return this.queue.length === 0;
     }
+
+}
+
+export enum LoopMode {
+    OFF = 'off',
+    TRACK = 'track',
+    QUEUE = 'queue'
 }
 
 export class TrackManagerError extends Error { }

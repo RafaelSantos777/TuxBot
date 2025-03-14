@@ -16,9 +16,7 @@ export default {
         ),
     async execute(context: CommandContext) {
         const trackManager = getTrackManager(context.guildId!);
-        const position = context instanceof Message ?
-            parseInt(extractCommandOptions(context))
-            : context.options.getInteger('position')!;
+        const position = context instanceof Message ? parseInt(extractCommandOptions(context)) : context.options.getInteger('position')!;
         const wasRemoved = trackManager.removeTrack(position - 1);
         if (!wasRemoved) {
             await context.reply({ content: `Invalid position. ❌`, ephemeral: true });

@@ -5,7 +5,7 @@ import { Command, CommandContext } from '../types/command.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('prefix')
-        .setDescription('Set my prefix for this server or check the current one.')
+        .setDescription('Sets my prefix for this server or shows the current one.')
         .setContexts([InteractionContextType.Guild])
         .addStringOption(option => option
             .setName('prefix')

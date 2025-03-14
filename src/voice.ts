@@ -58,6 +58,7 @@ function setupVoiceConnection(voiceConnection: VoiceConnection, guildId: string)
     });
     voiceConnection.on(VoiceConnectionStatus.Destroyed, () => {
         trackManager.clearQueue();
+        trackManager.currentTrack = null;
         audioPlayer.stop();
     });
 }
