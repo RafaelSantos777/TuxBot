@@ -17,7 +17,7 @@ export function addTrackManager(guildId: string) {
 export function getTrackManager(guildId: string): TrackManager {
     const trackManager = guildTrackManagers.get(guildId);
     if (!trackManager)
-        throw new Error(`The track manager for guild ${guildId} does not exist.`);
+        throw new Error(`Guild ${guildId} has no track manager.`);
     return trackManager;
 }
 
@@ -29,8 +29,7 @@ export class TrackManager {
     currentTrack: Track | null;
     loopMode: LoopMode;
     private isRetrying: boolean;
-    // BUG "filter" attribute for ytdl.downloadOptions is currently bugged, so it's not being used
-    private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { quality: 'highestaudio', highWaterMark: 8 << 20 };
+    private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio', highWaterMark: 8 << 20 };
     private static readonly YOUTUBE_VIDEO_BASE_URL = 'https://youtu.be/';
     private static readonly MAXIMUM_RETRY_ATTEMPTS = 5;
     private static readonly RETRY_DELAY = 1500;
