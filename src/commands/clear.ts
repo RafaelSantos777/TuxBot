@@ -9,10 +9,8 @@ export default {
         .setContexts([InteractionContextType.Guild]),
     async execute(context: CommandContext) {
         const trackManager = getTrackManager(context.guildId!);
-        if (trackManager.isQueueEmpty()) {
-            await context.reply({ content: `No queue to clear. ❌`, ephemeral: true });
-            return;
-        }
+        if (trackManager.isQueueEmpty())
+            return await context.reply({ content: `No queue to clear. ❌`, ephemeral: true });
         trackManager.clearQueue();
         await context.reply('Queue cleared.');
     }

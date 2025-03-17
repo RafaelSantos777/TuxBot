@@ -16,19 +16,16 @@ export default {
         const guildId = context.guildId!;
         if (!selectedPrefix) {
             const currentPrefix = getPrefix(guildId);
-            await context.reply(currentPrefix
+            return await context.reply(currentPrefix
                 ? `My prefix for this server is: **${currentPrefix}**`
                 : `My prefix for this server hasn't been set yet. ❌`);
-            return;
         }
         try {
             setPrefix(guildId, selectedPrefix);
             await context.reply(`Set my prefix for this server to: **${getPrefix(guildId)}**`);
         } catch (error) {
-            if (error instanceof PrefixManagerError) {
-                await context.reply({ content: `${error.message} ❌`, ephemeral: true });
-                return;
-            }
+            if (error instanceof PrefixManagerError)
+                return await context.reply({ content: `${error.message} ❌`, ephemeral: true });
             throw error;
         }
     },

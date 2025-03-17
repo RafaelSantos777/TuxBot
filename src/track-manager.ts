@@ -31,9 +31,10 @@ export class TrackManager {
     private isRetrying: boolean;
     private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio', highWaterMark: 8 << 20 };
     private static readonly YOUTUBE_VIDEO_BASE_URL = 'https://youtu.be/';
-    private static readonly MAXIMUM_RETRY_ATTEMPTS = 5;
-    private static readonly RETRY_DELAY = 1500;
     private static readonly UNAUTHORIZED_ERROR_MESSAGE = 'Status code: 403';
+    private static readonly MAX_RETRY_ATTEMPTS = 5;
+    private static readonly RETRY_DELAY = 1500;
+
 
     constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
@@ -66,8 +67,8 @@ export class TrackManager {
             }
         });
         this.audioPlayer.on('error', error => {
-            const track = error.resource.metadata as Track;
-            if (!error.message.includes(TrackManager.UNAUTHORIZED_ERROR_MESSAGE) || track.retryAttempts >= TrackManager.MAXIMUM_RETRY_ATTEMPTS) {
+            const errorTrack = error.resource.metadata as Track;
+            if (!error.message.includes(TrackManager.UNAUTHORIZED_ERROR_MESSAGE) || errorTrack.retryAttempts >= TrackManager.MAX_RETRY_ATTEMPTS) {
                 console.error(`Error occurred while playing track: ${error.message}`);
                 return;
             }
@@ -75,9 +76,9 @@ export class TrackManager {
             setTimeout(() => {
                 if (!this.isRetrying)
                     return;
-                track.retryAttempts++;
+                errorTrack.retryAttempts++;
                 this.isRetrying = false;
-                this.playTrack(track);
+                this.playTrack(errorTrack);
             }, TrackManager.RETRY_DELAY);
         });
     }

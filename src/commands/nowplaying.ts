@@ -11,10 +11,8 @@ export default {
     async execute(context: CommandContext) {
         const trackManager = getTrackManager(context.guildId!);
         const currentTrack = trackManager.currentTrack;
-        if (!currentTrack) {
-            await context.reply({ content: 'No track is currently playing. ❌', ephemeral: true });
-            return;
-        }
+        if (!currentTrack)
+            return await context.reply({ content: 'No track is currently playing. ❌', ephemeral: true });
         await context.reply(`Currently playing ${currentTrack.url}.`);
     },
 } as Command;

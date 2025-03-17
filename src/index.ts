@@ -6,7 +6,7 @@ async function main() {
         await setupClient();
         await login();
         setupTrackManagers();
-        console.log('Client logged in successfully.');
+        console.info('Client logged in successfully.');
     } catch (error) {
         console.error(error);
         await logout();

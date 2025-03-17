@@ -19,12 +19,10 @@ export default {
             )),
     async execute(context: CommandContext) {
         const loopMode = context instanceof Message ? extractCommandOptions(context).toLowerCase() : context.options.getString('mode');
-        if (!Object.values(LoopMode).includes(loopMode as LoopMode)) {
-            await context.reply({ content: 'Invalid loop mode. ❌', ephemeral: true });
-            return;
-        }
+        if (!Object.values(LoopMode).includes(loopMode as LoopMode))
+            return await context.reply({ content: 'Invalid loop mode. ❌', ephemeral: true });
         const trackManager = getTrackManager(context.guildId!);
         trackManager.loopMode = loopMode as LoopMode;
-        context.reply(`Loop mode set to: **${loopMode}**`);
+        await context.reply(`Loop mode set to: **${loopMode}**`);
     },
 } as Command;
