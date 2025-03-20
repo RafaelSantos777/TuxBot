@@ -4,6 +4,7 @@ import { getTrackManager, TrackManager, TrackManagerError } from '../track-manag
 import { getCommandContextUserVoiceChannel, joinVoiceChannel } from '../voice.js';
 import { extractCommandOptions } from '../prefix-manager.js';
 import { Command, CommandContext } from '../types/command.js';
+import { Track } from '../types/track.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -34,8 +35,8 @@ export default {
     },
 } as Command;
 
-async function enqueueTrack(context: CommandContext, trackManager: TrackManager) {
-    const query = context instanceof Message ? extractCommandOptions(context) : context.options.getString('query');
+async function enqueueTrack(context: CommandContext, trackManager: TrackManager): Promise<Track | number | null> {
+    const query = context instanceof Message ? extractCommandOptions(context) : context.options.getString('query', true);
     if (!query) {
         await context.reply({ content: 'You must provide a Youtube search term, video URL, or playlist URL. ❌', ephemeral: true });
         return null;

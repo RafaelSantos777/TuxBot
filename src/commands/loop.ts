@@ -18,7 +18,7 @@ export default {
                 { name: LoopMode.QUEUE, value: LoopMode.QUEUE }
             )),
     async execute(context: CommandContext) {
-        const loopMode = context instanceof Message ? extractCommandOptions(context).toLowerCase() : context.options.getString('mode');
+        const loopMode = context instanceof Message ? extractCommandOptions(context).toLowerCase() : context.options.getString('mode', true);
         if (!Object.values(LoopMode).includes(loopMode as LoopMode))
             return await context.reply({ content: 'Invalid loop mode. ❌', ephemeral: true });
         const trackManager = getTrackManager(context.guildId!);
