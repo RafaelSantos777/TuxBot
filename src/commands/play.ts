@@ -13,7 +13,7 @@ export default {
         .setContexts([InteractionContextType.Guild])
         .addStringOption(option => option
             .setName('query')
-            .setDescription('Search term, track URL, or playlist URL from Youtube, Spotify or SoundCloud.')
+            .setDescription('YouTube search term, track URL, or playlist URL.')
             .setRequired(true)),
     aliases: ['p'],
     async execute(context: CommandContext) {
@@ -38,7 +38,7 @@ export default {
 async function enqueueTrackOrPlaylist(context: CommandContext, trackManager: TrackManager): Promise<Track | Track[] | null> {
     const query = context instanceof Message ? extractCommandOptions(context) : context.options.getString('query', true);
     if (!query) {
-        await context.reply({ content: 'You must provide a search term, track URL, or playlist URL from Youtube, Spotify, or SoundCloud. ❌', ephemeral: true });
+        await context.reply({ content: 'You must provide a YouTube search term, track URL, or playlist URL. ❌', ephemeral: true });
         return null;
     }
     try {

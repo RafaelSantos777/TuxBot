@@ -32,7 +32,7 @@ export class TrackManager {
     private isRetrying: boolean;
     private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio', highWaterMark: 8 << 20 };
     private static readonly UNAUTHORIZED_ERROR_MESSAGE = 'Status code: 403';
-    private static readonly MAX_RETRY_ATTEMPTS = 5;
+    private static readonly MAX_RETRY_ATTEMPTS = 3;
     private static readonly RETRY_DELAY = 1500;
 
     constructor() {
