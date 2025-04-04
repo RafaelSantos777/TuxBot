@@ -9,11 +9,11 @@ import { Track } from '../types/track.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('play')
-        .setDescription('Plays a track or adds it to the queue.')
+        .setDescription('Plays a track or adds a track/playlist to the queue.')
         .setContexts([InteractionContextType.Guild])
         .addStringOption(option => option
             .setName('query')
-            .setDescription('Youtube search term, video URL, or playlist URL.')
+            .setDescription('Search term, track URL, or playlist URL from Youtube, Spotify or SoundCloud.')
             .setRequired(true)),
     aliases: ['p'],
     async execute(context: CommandContext) {
@@ -23,26 +23,26 @@ export default {
         const userVoiceChannel = await getCommandContextUserVoiceChannel(context);
         if (!voiceConnection && !userVoiceChannel)
             return await context.reply({ content: 'Either you or I must be in a voice channel. ❌', ephemeral: true });
-        const enqueuedTrack = await enqueueTrack(context, trackManager);
-        if (!enqueuedTrack)
+        const enqueuedTrackOrPlaylist = await enqueueTrackOrPlaylist(context, trackManager);
+        if (!enqueuedTrackOrPlaylist)
             return;
         if (!voiceConnection)
             joinVoiceChannel(userVoiceChannel!);
         const startedPlaying = trackManager.play();
-        if (typeof enqueuedTrack === 'number')
-            return await context.reply(`Added ${enqueuedTrack} track${enqueuedTrack === 1 ? '' : 's'} to the queue.`);
-        await context.reply(startedPlaying ? `Playing ${enqueuedTrack.url}.` : `Added ${enqueuedTrack.url} to the queue.`);
+        if (enqueuedTrackOrPlaylist instanceof Array)
+            return await context.reply(`Added ${enqueuedTrackOrPlaylist.length} track${enqueuedTrackOrPlaylist.length === 1 ? '' : 's'} to the queue.`);
+        await context.reply(startedPlaying ? `Playing ${enqueuedTrackOrPlaylist.url}.` : `Added ${enqueuedTrackOrPlaylist.url} to the queue.`);
     },
 } as Command;
 
-async function enqueueTrack(context: CommandContext, trackManager: TrackManager): Promise<Track | number | null> {
+async function enqueueTrackOrPlaylist(context: CommandContext, trackManager: TrackManager): Promise<Track | Track[] | null> {
     const query = context instanceof Message ? extractCommandOptions(context) : context.options.getString('query', true);
     if (!query) {
-        await context.reply({ content: 'You must provide a Youtube search term, video URL, or playlist URL. ❌', ephemeral: true });
+        await context.reply({ content: 'You must provide a search term, track URL, or playlist URL from Youtube, Spotify, or SoundCloud. ❌', ephemeral: true });
         return null;
     }
     try {
-        return await trackManager.enqueueTrack(query);
+        return await trackManager.enqueueTrackOrPlaylist(query);
     } catch (error) {
         if (error instanceof TrackManagerError) {
             await context.reply({ content: `${error.message} ❌`, ephemeral: true });

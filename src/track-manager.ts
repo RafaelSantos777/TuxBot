@@ -1,10 +1,11 @@
-import { AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, NoSubscriberBehavior } from '@discordjs/voice';
+import { AudioPlayer, AudioPlayerPlayingState, AudioPlayerStatus, createAudioPlayer, createAudioResource, NoSubscriberBehavior } from '@discordjs/voice';
 import ytdl from '@distube/ytdl-core';
-import youtubeSearchAPI from 'youtube-search-api';
+import { SearchResultType, YouTubePlaylist, YouTubePlugin, YouTubeSong } from "@distube/youtube";
 import { getClient } from './client.js';
 import { Track } from './types/track.js';
 
 const guildTrackManagers: Map<string, TrackManager> = new Map();
+const youtubePlugin = new YouTubePlugin();
 
 export function setupTrackManagers() {
     getClient().guilds.cache.forEach(guild => addTrackManager(guild.id));
@@ -30,11 +31,9 @@ export class TrackManager {
     loopMode: LoopMode;
     private isRetrying: boolean;
     private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio', highWaterMark: 8 << 20 };
-    private static readonly YOUTUBE_VIDEO_BASE_URL = 'https://youtu.be/';
     private static readonly UNAUTHORIZED_ERROR_MESSAGE = 'Status code: 403';
     private static readonly MAX_RETRY_ATTEMPTS = 5;
     private static readonly RETRY_DELAY = 1500;
-
 
     constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
@@ -46,6 +45,9 @@ export class TrackManager {
     }
 
     private setupAudioPlayer() {
+        this.audioPlayer.on(AudioPlayerStatus.Playing, () => {
+            this.currentTrack = (this.audioPlayer.state as AudioPlayerPlayingState).resource.metadata as Track;
+        });
         this.audioPlayer.on(AudioPlayerStatus.Idle, () => {
             if (this.isRetrying)
                 return;
@@ -69,7 +71,7 @@ export class TrackManager {
         this.audioPlayer.on('error', error => {
             const errorTrack = error.resource.metadata as Track;
             if (!error.message.includes(TrackManager.UNAUTHORIZED_ERROR_MESSAGE) || errorTrack.retryAttempts >= TrackManager.MAX_RETRY_ATTEMPTS) {
-                console.error(`Error occurred while playing track: ${error.message}`);
+                console.error(`The following error occurred while playing track: ${error.message}`);
                 return;
             }
             this.isRetrying = true;
@@ -83,56 +85,52 @@ export class TrackManager {
         });
     }
 
-    async enqueueTrack(query: string): Promise<Track | number> {
+    async enqueueTrackOrPlaylist(query: string): Promise<Track | Track[]> {
 
-        async function searchVideoId(): Promise<string> {
-            const searchResults = await youtubeSearchAPI.GetListByKeyword(query, false, 1, [{ type: 'video' }]);
-            if (searchResults.items.length === 0)
-                throw new TrackManagerError(`No results found for "${query}" on Youtube.`);
-            return searchResults.items[0].id;
+        async function searchYouTubeSong(): Promise<YouTubeSong> {
+            const searchResults = await youtubePlugin.search(query, { type: SearchResultType.VIDEO, limit: 1, safeSearch: false });
+            if (searchResults.length === 0)
+                throw new TrackManagerError(`No results found for "${query}" on YouTube.`);
+            return searchResults[0];
         }
 
-        async function checkTrackAccessibility() {
+        async function resolveYouTubeSongOrPlaylist(): Promise<YouTubeSong | YouTubePlaylist<unknown>> {
+            const isQueryValidURL = youtubePlugin.validate(query);
+            const url = isQueryValidURL ? query : (await searchYouTubeSong()).url!;
             try {
-                await youtubeSearchAPI.GetVideoDetails(videoId);
+                return await youtubePlugin.resolve(url, {});
             } catch (error) {
-                throw new TrackManagerError(isQueryVideoURL
+                throw new TrackManagerError(isQueryValidURL
                     ? `I can't access that Youtube URL, it's probably age-restricted, region-locked, or private.`
                     : `I can't access the result I found for "${query}" on Youtube, it's probably age-restricted.`);
             }
         }
 
-        const isQueryPlaylistURL = (query.includes('playlist?list=') || (query.includes('&list=') && !query.includes('&index=')));
-        if (isQueryPlaylistURL)
-            return await this.enqueuePlaylist(query);
-        const isQueryVideoURL = ytdl.validateURL(query);
-        const videoId = isQueryVideoURL ? ytdl.getURLVideoID(query) : await searchVideoId();
-        await checkTrackAccessibility();
-        const track = this.createTrack(videoId);
+        const youtubeSongOrPlaylist = await resolveYouTubeSongOrPlaylist();
+        if (youtubeSongOrPlaylist instanceof YouTubePlaylist)
+            return await this.enqueuePlaylist(youtubeSongOrPlaylist);
+        const track = this.createTrack(youtubeSongOrPlaylist);
         this.queue.push(track);
         return track;
     }
 
-    private async enqueuePlaylist(playlistURL: string): Promise<number> {
-        try {
-            const playlistId = playlistURL.split('list=')[1].split('&')[0];
-            var videos = (await youtubeSearchAPI.GetPlaylistData(playlistId)).items;
-        } catch (error) {
-            throw new TrackManagerError(`I can't access that Youtube playlist, it's probably private.`);
+    private async enqueuePlaylist(youtubePlaylist: YouTubePlaylist<unknown>): Promise<Track[]> {
+        const enqueuedTracks = [];
+        for (const song of youtubePlaylist.songs) {
+            const track = this.createTrack(song);
+            this.queue.push(track);
+            enqueuedTracks.push(track);
         }
-        for (const video of videos)
-            this.queue.push(this.createTrack(video.id));
-        return videos.length;
+        return enqueuedTracks;
     }
 
-    private createTrack(videoId: string): Track {
-        return { url: `${TrackManager.YOUTUBE_VIDEO_BASE_URL}${videoId}`, retryAttempts: 0 };
+    private createTrack(youtubeSong: YouTubeSong): Track {
+        return { url: youtubeSong.url!, retryAttempts: 0 };
     }
 
     private playTrack(track: Track) {
         const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
         const audioResource = createAudioResource(ytdlStream, { metadata: track });
-        this.currentTrack = track;
         this.audioPlayer.play(audioResource);
     }
 
@@ -168,8 +166,8 @@ export class TrackManager {
 
     reset() {
         this.clearQueue();
-        this.currentTrack = null;
         this.isRetrying = false;
+        this.currentTrack = null;
         this.audioPlayer.stop();
     }
 
