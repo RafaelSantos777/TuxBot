@@ -22,7 +22,6 @@ export function getTrackManager(guildId: string): TrackManager {
     return trackManager;
 }
 
-// TODO Implement /pause, /resume, /queue, better UI
 export class TrackManager {
 
     readonly audioPlayer: AudioPlayer;
@@ -90,19 +89,21 @@ export class TrackManager {
         async function searchYouTubeSong(): Promise<YouTubeSong> {
             const searchResults = await youtubePlugin.search(query, { type: SearchResultType.VIDEO, limit: 1, safeSearch: false });
             if (searchResults.length === 0)
-                throw new TrackManagerError(`No results found for "${query}" on YouTube.`);
+                throw new TrackManagerError(`No results found for "${query}" on YouTube. ❌`);
             return searchResults[0];
         }
 
         async function resolveYouTubeSongOrPlaylist(): Promise<YouTubeSong | YouTubePlaylist<unknown>> {
+            if (!query)
+                throw new TrackManagerError('You must provide a YouTube search term, track URL, or playlist URL. ❌');
             const isQueryValidURL = youtubePlugin.validate(query);
             const url = isQueryValidURL ? query : (await searchYouTubeSong()).url!;
             try {
                 return await youtubePlugin.resolve(url, {});
             } catch (error) {
                 throw new TrackManagerError(isQueryValidURL
-                    ? `I can't access that Youtube URL, it's probably age-restricted, region-locked, or private.`
-                    : `I can't access the result I found for "${query}" on Youtube, it's probably age-restricted.`);
+                    ? `I can't access that Youtube URL, it's probably age-restricted, region-locked, or private. ❌`
+                    : `I can't access the result I found for "${query}" on Youtube, it's probably age-restricted. ❌`);
             }
         }
 
@@ -143,17 +144,13 @@ export class TrackManager {
     }
 
     skip(): boolean {
-        if (this.audioPlayer.state.status === AudioPlayerStatus.Idle)
-            return false;
-        this.audioPlayer.stop();
-        return true;
+        return this.audioPlayer.stop();
     }
 
-    removeTrack(index: number): boolean {
+    removeTrack(index: number): Track | null {
         if (Number.isNaN(index) || index < 0 || index >= this.queue.length)
-            return false;
-        this.queue.splice(index, 1);
-        return true;
+            return null;
+        return this.queue.splice(index, 1)[0];
     }
 
     clearQueue() {
@@ -166,9 +163,9 @@ export class TrackManager {
 
     reset() {
         this.clearQueue();
-        this.isRetrying = false;
+        this.skip();
         this.currentTrack = null;
-        this.audioPlayer.stop();
+        this.isRetrying = false;
     }
 
 }

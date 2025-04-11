@@ -23,24 +23,25 @@ export default {
         const userVoiceChannel = await getCommandContextUserVoiceChannel(context);
         if (!voiceConnection && !userVoiceChannel)
             return await context.reply({ content: 'Either you or I must be in a voice channel. ❌', ephemeral: true });
-        const enqueuedTrackOrPlaylist = await enqueueTrackOrPlaylist(context, trackManager);
-        if (!enqueuedTrackOrPlaylist)
+        const trackOrPlaylist = await enqueueTrackOrPlaylist(context, trackManager);
+        if (!trackOrPlaylist)
             return;
         if (!voiceConnection)
             joinVoiceChannel(userVoiceChannel!);
         const startedPlaying = trackManager.play();
-        if (enqueuedTrackOrPlaylist instanceof Array)
-            return await context.reply(`Added ${enqueuedTrackOrPlaylist.length} track${enqueuedTrackOrPlaylist.length === 1 ? '' : 's'} to the queue.`);
-        await context.reply(startedPlaying ? `Playing ${enqueuedTrackOrPlaylist.url}.` : `Added ${enqueuedTrackOrPlaylist.url} to the queue.`);
+        if (trackOrPlaylist instanceof Array)
+            return await context.reply(`Added ${trackOrPlaylist.length} track${trackOrPlaylist.length === 1 ? '' : 's'} to the queue.`);
+        await context.reply(startedPlaying ? `Playing ${trackOrPlaylist.url}.` : `Added ${trackOrPlaylist.url} to the queue.`);
     },
 } as Command;
 
 async function enqueueTrackOrPlaylist(context: CommandContext, trackManager: TrackManager): Promise<Track | Track[] | null> {
     const query = context instanceof Message ? extractCommandOptions(context) : context.options.getString('query', true);
-    if (!query) {
-        await context.reply({ content: 'You must provide a YouTube search term, track URL, or playlist URL. ❌', ephemeral: true });
-        return null;
-    }
+    //if (!query) {
+    //    await context.reply({ content: 'You must provide a YouTube search term, track URL, or playlist URL. ❌', ephemeral: true });
+    //    return null;
+    //}
+    // TODO TEST
     try {
         return await trackManager.enqueueTrackOrPlaylist(query);
     } catch (error) {
