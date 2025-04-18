@@ -1,8 +1,9 @@
-import { AudioPlayer, AudioPlayerPlayingState, AudioPlayerStatus, createAudioPlayer, createAudioResource, NoSubscriberBehavior } from '@discordjs/voice';
+import { AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, NoSubscriberBehavior } from '@discordjs/voice';
 import ytdl from '@distube/ytdl-core';
 import { SearchResultType, YouTubePlaylist, YouTubePlugin, YouTubeSong } from "@distube/youtube";
 import { getClient } from './client.js';
 import { Track } from './types/track.js';
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 
 const guildTrackManagers: Map<string, TrackManager> = new Map();
 const youtubePlugin = new YouTubePlugin();
@@ -22,6 +23,11 @@ export function getTrackManager(guildId: string): TrackManager {
     return trackManager;
 }
 
+// TODO /seek command
+// TODO Add formatted time option (MM:SS) to the /forward, /rewind, and /seek commands
+// TODO /queue command
+// TODO Spotify, Deezer, and SoundCloud support (search on these platforms but play on YouTube)
+// TODO Add sound effects support (e.g. nightcore, echo, reverb, etc.) using ffmpeg filters
 export class TrackManager {
 
     readonly audioPlayer: AudioPlayer;
@@ -29,10 +35,11 @@ export class TrackManager {
     currentTrack: Track | null;
     loopMode: LoopMode;
     private isRetrying: boolean;
+    private ffmpegProcess: ChildProcessWithoutNullStreams | null;
     private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio', highWaterMark: 8 << 20 };
     private static readonly UNAUTHORIZED_ERROR_MESSAGE = 'Status code: 403';
     private static readonly MAX_RETRY_ATTEMPTS = 3;
-    private static readonly RETRY_DELAY = 1500;
+    private static readonly RETRY_DELAY_MILLISECONDS = 1500;
 
     constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
@@ -40,48 +47,99 @@ export class TrackManager {
         this.currentTrack = null;
         this.loopMode = LoopMode.OFF;
         this.isRetrying = false;
+        this.ffmpegProcess = null;
         this.setupAudioPlayer();
     }
 
     private setupAudioPlayer() {
-        this.audioPlayer.on(AudioPlayerStatus.Playing, () => {
-            this.currentTrack = (this.audioPlayer.state as AudioPlayerPlayingState).resource.metadata as Track;
+        this.audioPlayer.on(AudioPlayerStatus.Playing, (_, audioPlayer) => {
+            this.currentTrack = audioPlayer.resource.metadata as Track;
         });
         this.audioPlayer.on(AudioPlayerStatus.Idle, () => {
-            if (this.isRetrying)
-                return;
-            const previousTrack = this.currentTrack;
-            this.currentTrack = null;
-            switch (this.loopMode) {
-                case LoopMode.OFF:
-                    this.play();
-                    break;
-                case LoopMode.TRACK:
-                    if (previousTrack)
-                        this.playTrack(previousTrack);
-                    break;
-                case LoopMode.QUEUE:
-                    if (previousTrack)
-                        this.queue.push(previousTrack);
-                    this.play();
-                    break;
-            }
+            this.killFfmpegProcess();
+            this.handleTrackTransition();
         });
         this.audioPlayer.on('error', error => {
+            this.killFfmpegProcess();
             const errorTrack = error.resource.metadata as Track;
             if (!error.message.includes(TrackManager.UNAUTHORIZED_ERROR_MESSAGE) || errorTrack.retryAttempts >= TrackManager.MAX_RETRY_ATTEMPTS) {
                 console.error(`The following error occurred while playing track: ${error.message}`);
                 return;
             }
-            this.isRetrying = true;
-            setTimeout(() => {
-                if (!this.isRetrying)
-                    return;
-                errorTrack.retryAttempts++;
-                this.isRetrying = false;
-                this.playTrack(errorTrack);
-            }, TrackManager.RETRY_DELAY);
+            this.retryPlayTrackAfterDelay(errorTrack);
         });
+    }
+
+    private handleTrackTransition() {
+        if (this.isRetrying)
+            return;
+        const previousTrack = this.currentTrack;
+        this.currentTrack = null;
+        switch (this.loopMode) {
+            case LoopMode.OFF:
+                this.play();
+                break;
+            case LoopMode.TRACK:
+                if (previousTrack)
+                    this.playTrack(previousTrack);
+                break;
+            case LoopMode.QUEUE:
+                if (previousTrack)
+                    this.queue.push(previousTrack);
+                this.play();
+                break;
+        }
+    }
+
+    private retryPlayTrackAfterDelay(track: Track) {
+        if (this.isRetrying)
+            return;
+        this.isRetrying = true;
+        setTimeout(() => {
+            if (!this.isRetrying)
+                return;
+            track.retryAttempts++;
+            this.isRetrying = false;
+            this.playTrack(track);
+        }, TrackManager.RETRY_DELAY_MILLISECONDS);
+    }
+
+    private async enqueuePlaylist(youtubePlaylist: YouTubePlaylist<unknown>): Promise<Track[]> {
+        const enqueuedTracks = [];
+        for (const song of youtubePlaylist.songs) {
+            const track = this.createTrack(song);
+            this.queue.push(track);
+            enqueuedTracks.push(track);
+        }
+        return enqueuedTracks;
+    }
+
+    private createTrack(youtubeSong: YouTubeSong): Track {
+        return { url: youtubeSong.url!, startTimeMilliseconds: 0, retryAttempts: 0 };
+    }
+
+    private createFfmpegProcess(startTimeMilliseconds: number) {
+        this.ffmpegProcess = spawn('ffmpeg', [
+            '-i', 'pipe:0',
+            '-ss', `${startTimeMilliseconds}ms`,
+            '-f', 'opus',
+            'pipe:1'
+        ], {
+            stdio: ['pipe', 'pipe', 'pipe']
+        });
+    }
+
+    private killFfmpegProcess() {
+        this.ffmpegProcess?.kill();
+        this.ffmpegProcess = null;
+    }
+
+    private playTrack(track: Track) {
+        const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
+        this.createFfmpegProcess(track.startTimeMilliseconds);
+        ytdlStream.pipe(this.ffmpegProcess!.stdin);
+        const audioResource = createAudioResource(this.ffmpegProcess!.stdout, { metadata: track });
+        this.audioPlayer.play(audioResource);
     }
 
     async enqueueTrackOrPlaylist(query: string): Promise<Track | Track[]> {
@@ -115,26 +173,6 @@ export class TrackManager {
         return track;
     }
 
-    private async enqueuePlaylist(youtubePlaylist: YouTubePlaylist<unknown>): Promise<Track[]> {
-        const enqueuedTracks = [];
-        for (const song of youtubePlaylist.songs) {
-            const track = this.createTrack(song);
-            this.queue.push(track);
-            enqueuedTracks.push(track);
-        }
-        return enqueuedTracks;
-    }
-
-    private createTrack(youtubeSong: YouTubeSong): Track {
-        return { url: youtubeSong.url!, retryAttempts: 0 };
-    }
-
-    private playTrack(track: Track) {
-        const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
-        const audioResource = createAudioResource(ytdlStream, { metadata: track });
-        this.audioPlayer.play(audioResource);
-    }
-
     play(): boolean {
         if (this.isQueueEmpty() || this.audioPlayer.state.status !== AudioPlayerStatus.Idle || this.isRetrying)
             return false;
@@ -147,9 +185,23 @@ export class TrackManager {
         return this.audioPlayer.stop();
     }
 
-    removeTrack(index: number): Track | null {
-        if (Number.isNaN(index) || index < 0 || index >= this.queue.length)
-            return null;
+    seek(seconds: number, method: 'forward' | 'rewind') {
+        if (seconds <= 0)
+            throw new TrackManagerError('You must provide a positive number of seconds. ❌');
+        if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing)
+            throw new TrackManagerError(`A track must be playing. ❌`);
+        this.killFfmpegProcess();
+        const currentTrack = this.currentTrack!;
+        const playbackDuration = this.audioPlayer.state.playbackDuration;
+        const variationMilliseconds = (method === 'forward' ? seconds : -seconds) * 1000;
+        currentTrack.startTimeMilliseconds = Math.max(0, currentTrack.startTimeMilliseconds + playbackDuration + variationMilliseconds);
+        this.playTrack(currentTrack);
+    }
+
+    removeTrack(position: number): Track {
+        const index = position - 1;
+        if (index < 0 || index >= this.queue.length)
+            throw new TrackManagerError(`Invalid position: ${position}. ❌`);
         return this.queue.splice(index, 1)[0];
     }
 

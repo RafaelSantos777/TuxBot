@@ -15,9 +15,9 @@ export function setPrefix(guildId: string, prefix: string) {
 
     function validatePrefix() {
         if (!PREFIX_REGEX.test(prefix))
-            throw new PrefixManagerError('That prefix contains invalid characters.');
+            throw new PrefixManagerError('That prefix contains invalid characters. ❌');
         if (prefix.length > MAX_PREFIX_LENGTH)
-            throw new PrefixManagerError(`That prefix is too big. The maximum length is ${MAX_PREFIX_LENGTH} characters.`);
+            throw new PrefixManagerError(`That prefix is too big. The maximum length is ${MAX_PREFIX_LENGTH} characters. ❌`);
     }
 
     validatePrefix();

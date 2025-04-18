@@ -25,7 +25,7 @@ export default {
             await context.reply(`Set my prefix for this server to: **${getPrefix(guildId)}**`);
         } catch (error) {
             if (error instanceof PrefixManagerError)
-                return await context.reply({ content: `${error.message} ❌`, ephemeral: true });
+                return await context.reply({ content: `${error.message}`, ephemeral: true });
             throw error;
         }
     },
