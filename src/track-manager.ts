@@ -142,9 +142,10 @@ export class TrackManager {
 
     private playTrack(track: Track) {
         const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
-        this.spawnFfmpegProcess(track.startTimeSeconds);
-        ytdlStream.pipe(this.ffmpegProcess!.stdin);
-        const audioResource = createAudioResource(this.ffmpegProcess!.stdout, { metadata: track });
+        // this.spawnFfmpegProcess(track.startTimeSeconds);
+        // ytdlStream.pipe(this.ffmpegProcess!.stdin);
+        // const audioResource = createAudioResource(this.ffmpegProcess!.stdout, { metadata: track });
+        const audioResource = createAudioResource(ytdlStream, { metadata: track });
         this.audioPlayer.play(audioResource);
     }
 
