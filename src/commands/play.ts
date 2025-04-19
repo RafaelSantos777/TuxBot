@@ -34,7 +34,7 @@ export default {
             await context.reply(startedPlaying ? `Playing ${hyperlinkTrack(trackOrPlaylist)}.` : `Added ${hyperlinkTrack(trackOrPlaylist)} to the queue.`);
         } catch (error) {
             if (error instanceof TrackManagerError)
-                await context.reply({ content: `${error.message}`, ephemeral: true });
+                return await context.reply({ content: `${error.message}`, ephemeral: true });
             throw error;
         }
     },
