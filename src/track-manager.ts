@@ -192,7 +192,7 @@ export class TrackManager {
     }
 
     seek(seconds: number, method: 'forward' | 'rewind') {
-        if (seconds <= 0)
+        if (Number.isNaN(seconds) || seconds <= 0)
             throw new TrackManagerError('You must provide a positive number of seconds. ❌');
         if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing)
             throw new TrackManagerError(`A track must be playing. ❌`);
@@ -205,10 +205,9 @@ export class TrackManager {
     }
 
     removeTrack(position: number): Track {
-        const index = position - 1;
-        if (index < 0 || index >= this.queue.length)
+        if (Number.isNaN(position) || position < 1 || position > this.queue.length)
             throw new TrackManagerError(`Invalid position: ${position}. ❌`);
-        return this.queue.splice(index, 1)[0];
+        return this.queue.splice(position - 1, 1)[0];
     }
 
     clearQueue() {
