@@ -1,4 +1,4 @@
-import { bold, InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
+import { inlineCode, InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
 import { extractCommandOptions } from '../prefix-manager.js';
 import { getTrackManager, LoopMode } from '../track-manager.js';
 import { Command, CommandContext } from '../types/command.js';
@@ -23,6 +23,6 @@ export default {
             return await context.reply({ content: 'Invalid loop mode. ❌', ephemeral: true });
         const trackManager = getTrackManager(context.guildId!);
         trackManager.loopMode = loopMode as LoopMode;
-        await context.reply(`Loop mode set to: ${bold(loopMode)}`);
+        await context.reply(`Loop mode set to: ${inlineCode(loopMode)}`);
     },
 } as Command;

@@ -19,7 +19,7 @@ export function addTrackManager(guildId: string) {
 export function getTrackManager(guildId: string): TrackManager {
     const trackManager = guildTrackManagers.get(guildId);
     if (!trackManager)
-        throw new Error(`Guild ${guildId} has no track manager.`);
+        throw new Error(`Guild ${guildId} has no TrackManager.`);
     return trackManager;
 }
 
@@ -103,27 +103,6 @@ export class TrackManager {
         }, TrackManager.RETRY_DELAY_MILLISECONDS);
     }
 
-    private async enqueuePlaylist(youtubePlaylist: YouTubePlaylist<unknown>): Promise<Track[]> {
-        const enqueuedTracks = [];
-        for (const song of youtubePlaylist.songs) {
-            const track = TrackManager.createTrack(song);
-            this.queue.push(track);
-            enqueuedTracks.push(track);
-        }
-        return enqueuedTracks;
-    }
-
-    private static createTrack(youtubeSong: YouTubeSong): Track {
-        return {
-            url: youtubeSong.url!,
-            name: youtubeSong.name ?? '???',
-            durationSeconds: youtubeSong.duration,
-            formattedDuration: youtubeSong.formattedDuration,
-            startTimeSeconds: 0,
-            retryAttempts: 0
-        };
-    }
-
     private spawnFfmpegProcess(startTimeSeconds: number) {
         this.ffmpegProcess = spawn('ffmpeg', [
             '-i', 'pipe:0',
@@ -138,10 +117,21 @@ export class TrackManager {
     private killFfmpegProcess() {
         if (!this.ffmpegProcess)
             return;
-        this.ffmpegProcess.stdin.once('error', () => { });
-        this.ffmpegProcess.stdout.once('error', () => { });
+        this.ffmpegProcess.stdin.on('error', () => { });
+        this.ffmpegProcess.stdout.on('error', () => { });
         this.ffmpegProcess.kill();
         this.ffmpegProcess = null;
+    }
+
+    private static createTrack(youtubeSong: YouTubeSong): Track {
+        return {
+            url: youtubeSong.url!,
+            name: youtubeSong.name ?? '???',
+            durationSeconds: youtubeSong.duration,
+            formattedDuration: youtubeSong.formattedDuration,
+            startTimeSeconds: 0,
+            retryAttempts: 0
+        };
     }
 
     private playTrack(track: Track) {
@@ -150,6 +140,16 @@ export class TrackManager {
         ytdlStream.pipe(this.ffmpegProcess!.stdin);
         const audioResource = createAudioResource(this.ffmpegProcess!.stdout, { metadata: track });
         this.audioPlayer.play(audioResource);
+    }
+
+    private async enqueuePlaylist(youtubePlaylist: YouTubePlaylist<unknown>): Promise<Track[]> {
+        const enqueuedTracks = [];
+        for (const song of youtubePlaylist.songs) {
+            const track = TrackManager.createTrack(song);
+            this.queue.push(track);
+            enqueuedTracks.push(track);
+        }
+        return enqueuedTracks;
     }
 
     async enqueueTrackOrPlaylist(query: string): Promise<Track | Track[]> {
@@ -200,11 +200,11 @@ export class TrackManager {
             throw new TrackManagerError('You must provide a positive number of seconds. ❌');
         if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing)
             throw new TrackManagerError(`A track must be playing. ❌`);
-        this.killFfmpegProcess();
         const currentTrack = this.currentTrack!;
         const playbackDurationSeconds = this.audioPlayer.state.playbackDuration / 1000;
         const variationSeconds = method === 'forward' ? seconds : -seconds;
         currentTrack.startTimeSeconds = Math.max(0, currentTrack.startTimeSeconds + playbackDurationSeconds + variationSeconds);
+        this.killFfmpegProcess();
         this.playTrack(currentTrack);
     }
 
