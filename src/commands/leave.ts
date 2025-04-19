@@ -1,5 +1,5 @@
-import { InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import { getVoiceConnection } from '@discordjs/voice';
+import { InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import { Command, CommandContext } from '../types/command.js';
 
 export default {

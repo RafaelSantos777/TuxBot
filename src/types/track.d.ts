@@ -1,5 +1,8 @@
 export interface Track {
     url: string;
-    startTimeMilliseconds: number;
+    name: string;
+    durationSeconds: number;
+    formattedDuration: string;
+    startTimeSeconds: number;
     retryAttempts: number;
 }

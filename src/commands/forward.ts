@@ -1,7 +1,8 @@
 import { InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
+import { extractCommandOptions } from '../prefix-manager.js';
 import { getTrackManager, TrackManagerError } from '../track-manager.js';
 import { Command, CommandContext } from '../types/command.js';
-import { extractCommandOptions } from '../prefix-manager.js';
+import { pluralize } from '../utils.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -24,6 +25,6 @@ export default {
                 return await context.reply({ content: `${error.message}`, ephemeral: true });
             throw error;
         }
-        await context.reply(`Track forwarded by ${seconds} second${seconds === 1 ? '' : 's'}.`);
+        await context.reply(`Track forwarded by ${pluralize('second', seconds)}.`);
     },
 } as Command;

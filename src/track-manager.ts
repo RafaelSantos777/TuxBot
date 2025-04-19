@@ -1,9 +1,9 @@
 import { AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, NoSubscriberBehavior } from '@discordjs/voice';
-import ytdl from '@distube/ytdl-core';
 import { SearchResultType, YouTubePlaylist, YouTubePlugin, YouTubeSong } from "@distube/youtube";
+import ytdl from '@distube/ytdl-core';
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { getClient } from './client.js';
 import { Track } from './types/track.js';
-import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 
 const guildTrackManagers: Map<string, TrackManager> = new Map();
 const youtubePlugin = new YouTubePlugin();
@@ -25,7 +25,6 @@ export function getTrackManager(guildId: string): TrackManager {
 
 // TODO /seek command
 // TODO Add formatted time option (MM:SS) to the /forward, /rewind, and /seek commands
-// TODO /queue command
 // TODO Spotify, Deezer, and SoundCloud support (search on these platforms but play on YouTube)
 // TODO Add sound effects support (e.g. nightcore, echo, reverb, etc.) using ffmpeg filters
 export class TrackManager {
@@ -107,21 +106,28 @@ export class TrackManager {
     private async enqueuePlaylist(youtubePlaylist: YouTubePlaylist<unknown>): Promise<Track[]> {
         const enqueuedTracks = [];
         for (const song of youtubePlaylist.songs) {
-            const track = this.createTrack(song);
+            const track = TrackManager.createTrack(song);
             this.queue.push(track);
             enqueuedTracks.push(track);
         }
         return enqueuedTracks;
     }
 
-    private createTrack(youtubeSong: YouTubeSong): Track {
-        return { url: youtubeSong.url!, startTimeMilliseconds: 0, retryAttempts: 0 };
+    private static createTrack(youtubeSong: YouTubeSong): Track {
+        return {
+            url: youtubeSong.url!,
+            name: youtubeSong.name ?? '???',
+            durationSeconds: youtubeSong.duration,
+            formattedDuration: youtubeSong.formattedDuration,
+            startTimeSeconds: 0,
+            retryAttempts: 0
+        };
     }
 
-    private createFfmpegProcess(startTimeMilliseconds: number) {
+    private spawnFfmpegProcess(startTimeSeconds: number) {
         this.ffmpegProcess = spawn('ffmpeg', [
             '-i', 'pipe:0',
-            '-ss', `${startTimeMilliseconds}ms`,
+            '-ss', `${startTimeSeconds}s`,
             '-f', 'opus',
             'pipe:1'
         ], {
@@ -136,7 +142,7 @@ export class TrackManager {
 
     private playTrack(track: Track) {
         const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
-        this.createFfmpegProcess(track.startTimeMilliseconds);
+        this.spawnFfmpegProcess(track.startTimeSeconds);
         ytdlStream.pipe(this.ffmpegProcess!.stdin);
         const audioResource = createAudioResource(this.ffmpegProcess!.stdout, { metadata: track });
         this.audioPlayer.play(audioResource);
@@ -168,7 +174,7 @@ export class TrackManager {
         const youtubeSongOrPlaylist = await resolveYouTubeSongOrPlaylist();
         if (youtubeSongOrPlaylist instanceof YouTubePlaylist)
             return await this.enqueuePlaylist(youtubeSongOrPlaylist);
-        const track = this.createTrack(youtubeSongOrPlaylist);
+        const track = TrackManager.createTrack(youtubeSongOrPlaylist);
         this.queue.push(track);
         return track;
     }
@@ -192,9 +198,9 @@ export class TrackManager {
             throw new TrackManagerError(`A track must be playing. ❌`);
         this.killFfmpegProcess();
         const currentTrack = this.currentTrack!;
-        const playbackDuration = this.audioPlayer.state.playbackDuration;
-        const variationMilliseconds = (method === 'forward' ? seconds : -seconds) * 1000;
-        currentTrack.startTimeMilliseconds = Math.max(0, currentTrack.startTimeMilliseconds + playbackDuration + variationMilliseconds);
+        const playbackDurationSeconds = this.audioPlayer.state.playbackDuration / 1000;
+        const variationSeconds = method === 'forward' ? seconds : -seconds;
+        currentTrack.startTimeSeconds = Math.max(0, currentTrack.startTimeSeconds + playbackDurationSeconds + variationSeconds);
         this.playTrack(currentTrack);
     }
 

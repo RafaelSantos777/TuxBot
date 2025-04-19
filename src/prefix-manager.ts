@@ -1,7 +1,7 @@
 
-import fs from 'fs';
-import guildPrefixesJSON from '../data/guild-prefixes.json' with {type: 'json'};
 import { Message } from 'discord.js';
+import fs from 'fs';
+import guildPrefixesJSON from '../data/guild-prefixes.json' with { type: 'json' };
 
 const PREFIX_REGEX = new RegExp(/^[\w/!?=+\-.,;:*#&^~%$@<>«»()\[\]{}]*$/);
 const MAX_PREFIX_LENGTH = 10;

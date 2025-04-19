@@ -5,7 +5,7 @@ import { Command, CommandContext } from '../types/command.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('clear')
-        .setDescription('Clears the track queue.')
+        .setDescription('Clears the queue.')
         .setContexts([InteractionContextType.Guild]),
     async execute(context: CommandContext) {
         const trackManager = getTrackManager(context.guildId!);

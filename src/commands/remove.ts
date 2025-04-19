@@ -1,7 +1,8 @@
 import { InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
-import { getTrackManager, TrackManager, TrackManagerError } from '../track-manager.js';
-import { Command, CommandContext } from '../types/command.js';
 import { extractCommandOptions } from '../prefix-manager.js';
+import { getTrackManager, TrackManagerError } from '../track-manager.js';
+import { Command, CommandContext } from '../types/command.js';
+import { hyperlinkTrack } from '../utils.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -18,12 +19,12 @@ export default {
         const trackManager = getTrackManager(context.guildId!);
         const position = context instanceof Message ? parseInt(extractCommandOptions(context)) : context.options.getInteger('position', true);
         try {
-            trackManager.removeTrack(position);
+            const track = trackManager.removeTrack(position);
+            await context.reply(`Removed ${hyperlinkTrack(track)}.`); // TODO Surpress embed
         } catch (error) {
             if (error instanceof TrackManagerError)
                 return await context.reply({ content: `${error.message}`, ephemeral: true });
             throw error;
         }
-        await context.reply(`Track at position ${position} removed.`);
     },
 } as Command;

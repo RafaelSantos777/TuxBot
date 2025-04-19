@@ -1,4 +1,4 @@
-import { InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
+import { bold, InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
 import { extractCommandOptions, getPrefix, PrefixManagerError, setPrefix } from '../prefix-manager.js';
 import { Command, CommandContext } from '../types/command.js';
 
@@ -17,12 +17,12 @@ export default {
         if (!selectedPrefix) {
             const currentPrefix = getPrefix(guildId);
             return await context.reply(currentPrefix
-                ? `My prefix for this server is: **${currentPrefix}**`
+                ? `My prefix for this server is: ${bold(currentPrefix)}`
                 : `My prefix for this server hasn't been set yet. ❌`);
         }
         try {
             setPrefix(guildId, selectedPrefix);
-            await context.reply(`Set my prefix for this server to: **${getPrefix(guildId)}**`);
+            await context.reply(`Set my prefix for this server to: ${bold(getPrefix(guildId)!)}`);
         } catch (error) {
             if (error instanceof PrefixManagerError)
                 return await context.reply({ content: `${error.message}`, ephemeral: true });

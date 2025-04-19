@@ -1,10 +1,10 @@
-import { InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
 import { getVoiceConnection } from '@discordjs/voice';
-import { getTrackManager, TrackManager, TrackManagerError } from '../track-manager.js';
-import { getCommandContextUserVoiceChannel, joinVoiceChannel } from '../voice.js';
+import { InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
 import { extractCommandOptions } from '../prefix-manager.js';
+import { getTrackManager, TrackManagerError } from '../track-manager.js';
 import { Command, CommandContext } from '../types/command.js';
-import { Track } from '../types/track.js';
+import { getCommandContextUserVoiceChannel, joinVoiceChannel } from '../voice.js';
+import { hyperlinkTrack, pluralize } from '../utils.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -25,17 +25,17 @@ export default {
             return await context.reply({ content: 'Either you or I must be in a voice channel. ❌', ephemeral: true });
         const query = context instanceof Message ? extractCommandOptions(context) : context.options.getString('query', true);
         try {
-            var trackOrPlaylist = await trackManager.enqueueTrackOrPlaylist(query);
+            const trackOrPlaylist = await trackManager.enqueueTrackOrPlaylist(query);
+            if (!voiceConnection)
+                joinVoiceChannel(userVoiceChannel!);
+            const startedPlaying = trackManager.play();
+            if (trackOrPlaylist instanceof Array)
+                return await context.reply(`Added ${pluralize('track', trackOrPlaylist.length)} to the queue.`);
+            await context.reply(startedPlaying ? `Playing ${hyperlinkTrack(trackOrPlaylist)}.` : `Added ${hyperlinkTrack(trackOrPlaylist)} to the queue.`);
         } catch (error) {
             if (error instanceof TrackManagerError)
                 await context.reply({ content: `${error.message}`, ephemeral: true });
             throw error;
         }
-        if (!voiceConnection)
-            joinVoiceChannel(userVoiceChannel!);
-        const startedPlaying = trackManager.play();
-        if (trackOrPlaylist instanceof Array)
-            return await context.reply(`Added ${trackOrPlaylist.length} track${trackOrPlaylist.length === 1 ? '' : 's'} to the queue.`);
-        await context.reply(startedPlaying ? `Playing ${trackOrPlaylist.url}.` : `Added ${trackOrPlaylist.url} to the queue.`);
     },
 } as Command;

@@ -1,5 +1,5 @@
+import { joinVoiceChannel as createVoiceConnection, entersState, getVoiceConnection, VoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
 import { Guild, Message, VoiceChannel } from 'discord.js';
-import { entersState, getVoiceConnection, joinVoiceChannel as createVoiceConnection, VoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
 import { getClient } from './client.js';
 import { getTrackManager } from './track-manager.js';
 import { CommandContext } from './types/command.js';

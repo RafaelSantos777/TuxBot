@@ -1,5 +1,5 @@
-import { Message, SlashCommandBuilder } from 'discord.js';
-import EMOJIS from '../../data/emojis.json' with {type: 'json'};
+import { bold, Message, SlashCommandBuilder } from 'discord.js';
+import EMOJIS from '../../data/emojis.json' with { type: 'json' };
 import { Command, CommandContext } from '../types/command.js';
 
 const BASE_DICK_SIZE_CENTIMETERS = 13.75;
@@ -55,5 +55,5 @@ function createDickReply(userDisplayName: string): string {
 
 	const dickSizeCentimeters = generateRandomDickSizeCentimeters();
 	const emoji = getEmoji();
-	return `${userDisplayName}'s dick is **${formatDickSizeWithUnits()}** long.${emoji ? ' ' + emoji : ''}\n**${createDickShape()}**`;
+	return `${userDisplayName}'s dick is ${bold(formatDickSizeWithUnits())} long.${emoji ? ' ' + emoji : ''}\n${bold(createDickShape())}`;
 }

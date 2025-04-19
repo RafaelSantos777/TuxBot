@@ -1,10 +1,10 @@
-import 'dotenv/config';
-import path from 'path';
-import fs from 'fs';
-import { pathToFileURL } from 'url';
 import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from 'discord.js';
-import { addTrackManager } from './track-manager.js';
+import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
+import { pathToFileURL } from 'url';
 import { extractCommandName } from './prefix-manager.js';
+import { addTrackManager } from './track-manager.js';
 import { Command } from './types/command.js';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
@@ -56,7 +56,7 @@ export async function setupClient() {
                 }
             }
         });
-        client.on(Events.MessageCreate, async message => { // TODO Check for permissions to send message to channel (this is different from replying to interactions)
+        client.on(Events.MessageCreate, async message => { // FIXME Check for permissions to send message to channel (this is different from replying to interactions)
             if (!message.inGuild() || message.author.bot)
                 return;
             const messageCommandName = extractCommandName(message);
