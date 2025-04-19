@@ -15,11 +15,10 @@ export default {
         const trackManager = getTrackManager(context.guildId!);
         if (trackManager.isQueueEmpty())
             return await context.reply({ content: `No queue to display. ❌`, ephemeral: true });
-        const queue = trackManager.queue;
         const embed = new EmbedBuilder()
-            .setTitle(`${bold('Queue')} (${pluralize('track', queue.length)})`)
+            .setTitle(`${bold('Queue')} (${pluralize('track', trackManager.queue.length)})`)
             .setFields(
-                queue.slice(0, PAGE_SIZE).map((track, index) => ({
+                trackManager.queue.slice(0, PAGE_SIZE).map((track, index) => ({
                     name: '',
                     value: `${inlineCode(`${index + 1}.`)} ${hyperlinkTrack(track)} ${inlineCode(track.formattedDuration)}`,
                 })));

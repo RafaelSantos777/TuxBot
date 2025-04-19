@@ -20,7 +20,7 @@ export default {
         const position = context instanceof Message ? parseInt(extractCommandOptions(context)) : context.options.getInteger('position', true);
         try {
             const track = trackManager.removeTrack(position);
-            await context.reply(`Removed ${hyperlinkTrack(track)}.`); // TODO Surpress embed
+            await context.reply(`Removed ${hyperlinkTrack(track)} from the queue.`); // TODO Surpress embed
         } catch (error) {
             if (error instanceof TrackManagerError)
                 return await context.reply({ content: `${error.message}`, ephemeral: true });
