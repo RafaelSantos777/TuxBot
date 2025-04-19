@@ -136,7 +136,11 @@ export class TrackManager {
     }
 
     private killFfmpegProcess() {
-        this.ffmpegProcess?.kill();
+        if (!this.ffmpegProcess)
+            return;
+        this.ffmpegProcess.stdin.once('error', () => { });
+        this.ffmpegProcess.stdout.once('error', () => { });
+        this.ffmpegProcess.kill();
         this.ffmpegProcess = null;
     }
 
