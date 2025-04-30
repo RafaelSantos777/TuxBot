@@ -24,7 +24,6 @@ export function getTrackManager(guildId: string): TrackManager {
 }
 
 // TODO /seek command
-// TODO Add formatted time option (MM:SS) to the /forward, /rewind, and /seek commands
 // TODO Spotify, Deezer, and SoundCloud support (search on these platforms but play on YouTube)
 // TODO Add sound effects support (e.g. nightcore, echo, reverb, etc.) using ffmpeg filters
 export class TrackManager {
@@ -55,11 +54,11 @@ export class TrackManager {
             this.currentTrack = audioPlayer.resource.metadata as Track;
         });
         this.audioPlayer.on(AudioPlayerStatus.Idle, () => {
-            this.killFfmpegProcess();
+            this.killFFmpegProcess();
             this.handleTrackTransition();
         });
         this.audioPlayer.on('error', error => {
-            this.killFfmpegProcess();
+            this.killFFmpegProcess();
             const errorTrack = error.resource.metadata as Track;
             if (!error.message.includes(TrackManager.UNAUTHORIZED_ERROR_MESSAGE) || errorTrack.retryAttempts >= TrackManager.MAX_RETRY_ATTEMPTS) {
                 console.error(`The following error occurred while playing track: ${error.message}`);
@@ -103,7 +102,7 @@ export class TrackManager {
         }, TrackManager.RETRY_DELAY_MILLISECONDS);
     }
 
-    private spawnFfmpegProcess(startTimeSeconds: number) {
+    private spawnFFmpegProcess(startTimeSeconds: number) {
         this.ffmpegProcess = spawn('ffmpeg', [
             '-i', 'pipe:0',
             '-ss', `${startTimeSeconds}s`,
@@ -114,7 +113,7 @@ export class TrackManager {
         });
     }
 
-    private killFfmpegProcess() {
+    private killFFmpegProcess() {
         if (!this.ffmpegProcess)
             return;
         this.ffmpegProcess.stdin.on('error', () => { });
@@ -136,7 +135,7 @@ export class TrackManager {
 
     private playTrack(track: Track) {
         const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
-        this.spawnFfmpegProcess(track.startTimeSeconds);
+        this.spawnFFmpegProcess(track.startTimeSeconds);
         ytdlStream.pipe(this.ffmpegProcess!.stdin);
         const audioResource = createAudioResource(this.ffmpegProcess!.stdout, { metadata: track });
         this.audioPlayer.play(audioResource);
@@ -204,7 +203,7 @@ export class TrackManager {
         const playbackDurationSeconds = this.audioPlayer.state.playbackDuration / 1000;
         const variationSeconds = method === 'forward' ? seconds : -seconds;
         currentTrack.startTimeSeconds = Math.max(0, currentTrack.startTimeSeconds + playbackDurationSeconds + variationSeconds);
-        this.killFfmpegProcess();
+        this.killFFmpegProcess();
         this.playTrack(currentTrack);
     }
 

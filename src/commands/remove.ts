@@ -7,7 +7,7 @@ import { hyperlinkTrack } from '../utils.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('remove')
-        .setDescription('Removes a track from the queue at the specified position.')
+        .setDescription('Removes the track at the specified position from the queue.')
         .setContexts([InteractionContextType.Guild])
         .addIntegerOption(option => option
             .setName('position')

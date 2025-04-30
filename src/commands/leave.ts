@@ -5,7 +5,7 @@ import { Command, CommandContext } from '../types/command.js';
 export default {
 	data: new SlashCommandBuilder()
 		.setName('leave')
-		.setDescription('Leaves the current voice channel.')
+		.setDescription('Leaves the voice channel.')
 		.setContexts([InteractionContextType.Guild]),
 	async execute(context: CommandContext) {
 		const voiceConnection = getVoiceConnection(context.guildId!);
