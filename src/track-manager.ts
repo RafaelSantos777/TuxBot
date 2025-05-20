@@ -23,9 +23,8 @@ export function getTrackManager(guildId: string): TrackManager {
     return trackManager;
 }
 
-// TODO /seek command
 // TODO Spotify, Deezer, and SoundCloud support (search on these platforms but play on YouTube)
-// TODO Add sound effects support (e.g. nightcore, echo, reverb, etc.) using ffmpeg filters
+// TODO Add sound effects support (e.g. nightcore, echo, speed, etc.) using ffmpeg filters
 export class TrackManager {
 
     readonly audioPlayer: AudioPlayer;
@@ -198,7 +197,7 @@ export class TrackManager {
         if (Number.isNaN(seconds) || seconds <= 0)
             throw new TrackManagerError('You must provide a positive number of seconds. ❌');
         if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing)
-            throw new TrackManagerError(`A track must be playing. ❌`);
+            throw new TrackManagerError(`A track must be playing to do this. ❌`);
         const currentTrack = this.currentTrack!;
         const playbackDurationSeconds = this.audioPlayer.state.playbackDuration / 1000;
         const variationSeconds = method === 'forward' ? seconds : -seconds;
