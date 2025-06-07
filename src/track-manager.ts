@@ -4,6 +4,7 @@ import ytdl from '@distube/ytdl-core';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { getClient } from './client.js';
 import { Track } from './types/track.js';
+import assert from 'assert';
 
 const guildTrackManagers: Map<string, TrackManager> = new Map();
 const youtubePlugin = new YouTubePlugin();
@@ -24,7 +25,6 @@ export function getTrackManager(guildId: string): TrackManager {
 }
 
 // TODO Spotify, Deezer, and SoundCloud support (search on these platforms but play on YouTube)
-// TODO Add sound effects support (e.g. nightcore, echo, speed, etc.) using ffmpeg filters
 export class TrackManager {
 
     readonly audioPlayer: AudioPlayer;
@@ -33,6 +33,10 @@ export class TrackManager {
     loopMode: LoopMode;
     private isRetrying: boolean;
     private ffmpegProcess: ChildProcessWithoutNullStreams | null;
+    private currentPlaybackSpeed: number;
+
+    public static readonly MIN_PLAYBACK_SPEED = 0.5;
+    public static readonly MAX_PLAYBACK_SPEED = 100.0;
     private static readonly DOWNLOAD_OPTIONS: ytdl.downloadOptions = { filter: 'audioonly', quality: 'highestaudio', highWaterMark: 8 << 20 };
     private static readonly UNAUTHORIZED_ERROR_MESSAGE = 'Status code: 403';
     private static readonly MAX_RETRY_ATTEMPTS = 3;
@@ -45,6 +49,7 @@ export class TrackManager {
         this.loopMode = LoopMode.OFF;
         this.isRetrying = false;
         this.ffmpegProcess = null;
+        this.currentPlaybackSpeed = 1.0;
         this.setupAudioPlayer();
     }
 
@@ -101,10 +106,11 @@ export class TrackManager {
         }, TrackManager.RETRY_DELAY_MILLISECONDS);
     }
 
-    private spawnFFmpegProcess(startTimeSeconds: number) {
+    private spawnFFmpegProcess(startTimeMilliseconds: number) {
         this.ffmpegProcess = spawn('ffmpeg', [
             '-i', 'pipe:0',
-            '-ss', `${startTimeSeconds}s`,
+            '-ss', `${startTimeMilliseconds / this.currentPlaybackSpeed}ms`,
+            '-af', `atempo=${this.currentPlaybackSpeed}`,
             '-f', 'opus',
             'pipe:1'
         ], {
@@ -121,20 +127,27 @@ export class TrackManager {
         this.ffmpegProcess = null;
     }
 
+    private rebuildPlayback() {
+        if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing)
+            return;
+        this.killFFmpegProcess();
+        this.playTrack(this.currentTrack!);
+    }
+
     private static createTrack(youtubeSong: YouTubeSong): Track {
         return {
             url: youtubeSong.url!,
             name: youtubeSong.name ?? '???',
-            durationSeconds: youtubeSong.duration,
+            durationMilliseconds: youtubeSong.duration * 1000,
             formattedDuration: youtubeSong.formattedDuration,
-            startTimeSeconds: 0,
+            startTimeMilliseconds: 0,
             retryAttempts: 0
         };
     }
 
     private playTrack(track: Track) {
         const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
-        this.spawnFFmpegProcess(track.startTimeSeconds);
+        this.spawnFFmpegProcess(track.startTimeMilliseconds);
         ytdlStream.pipe(this.ffmpegProcess!.stdin);
         const audioResource = createAudioResource(this.ffmpegProcess!.stdout, { metadata: track });
         this.audioPlayer.play(audioResource);
@@ -199,11 +212,23 @@ export class TrackManager {
         if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing)
             throw new TrackManagerError(`A track must be playing to do this. ❌`);
         const currentTrack = this.currentTrack!;
-        const playbackDurationSeconds = this.audioPlayer.state.playbackDuration / 1000;
-        const variationSeconds = method === 'forward' ? seconds : -seconds;
-        currentTrack.startTimeSeconds = Math.max(0, currentTrack.startTimeSeconds + playbackDurationSeconds + variationSeconds);
-        this.killFFmpegProcess();
-        this.playTrack(currentTrack);
+        const variationMilliseconds = (method === 'forward' ? seconds : -seconds) * 1000;
+        currentTrack.startTimeMilliseconds += this.audioPlayer.state.playbackDuration * this.currentPlaybackSpeed + variationMilliseconds;
+        currentTrack.startTimeMilliseconds = Math.max(0, currentTrack.startTimeMilliseconds);
+        this.rebuildPlayback();
+    }
+
+    setPlaybackSpeed(playbackSpeed: number) {
+        if (Number.isNaN(playbackSpeed) || playbackSpeed < TrackManager.MIN_PLAYBACK_SPEED || playbackSpeed > TrackManager.MAX_PLAYBACK_SPEED)
+            throw new TrackManagerError(`You must provide a number between ${TrackManager.MIN_PLAYBACK_SPEED} and ${TrackManager.MAX_PLAYBACK_SPEED}. ❌`);
+        if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing) {
+            this.currentPlaybackSpeed = playbackSpeed;
+            return;
+        }
+        const currentTrack = this.currentTrack!;
+        currentTrack.startTimeMilliseconds += this.audioPlayer.state.playbackDuration * this.currentPlaybackSpeed;
+        this.currentPlaybackSpeed = playbackSpeed;
+        this.rebuildPlayback();
     }
 
     removeTrack(position: number): Track {
