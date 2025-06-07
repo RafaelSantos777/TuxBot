@@ -1,4 +1,4 @@
-import { InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
+import { inlineCode, InteractionContextType, Message, SlashCommandBuilder } from 'discord.js';
 import { extractCommandOptions } from '../prefix-manager.js';
 import { getTrackManager, TrackManager, TrackManagerError } from '../track-manager.js';
 import { Command, CommandContext } from '../types/command.js';
@@ -21,7 +21,7 @@ export default {
         const playbackSpeed = context instanceof Message ? parseFloat(extractCommandOptions(context)) : context.options.getNumber('speed', true);
         try {
             trackManager.setPlaybackSpeed(playbackSpeed);
-            await context.reply(`Playback speed set to ${playbackSpeed}.`);
+            await context.reply(`Playback speed set to ${inlineCode(playbackSpeed.toString())}.`);
         } catch (error) {
             if (error instanceof TrackManagerError)
                 return await context.reply({ content: `${error.message}`, ephemeral: true });

@@ -225,8 +225,7 @@ export class TrackManager {
             this.currentPlaybackSpeed = playbackSpeed;
             return;
         }
-        const currentTrack = this.currentTrack!;
-        currentTrack.startTimeMilliseconds += this.audioPlayer.state.playbackDuration * this.currentPlaybackSpeed;
+        this.currentTrack!.startTimeMilliseconds += this.audioPlayer.state.playbackDuration * this.currentPlaybackSpeed;
         this.currentPlaybackSpeed = playbackSpeed;
         this.rebuildPlayback();
     }
