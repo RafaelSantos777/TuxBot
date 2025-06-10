@@ -2,7 +2,6 @@ import { inlineCode, InteractionContextType, Message, SlashCommandBuilder } from
 import { extractCommandOptions } from '../prefix-manager.js';
 import { getTrackManager, TrackManager, TrackManagerError } from '../track-manager.js';
 import { Command, CommandContext } from '../types/command.js';
-import { hyperlinkTrack } from '../utils.js';
 
 export default {
     data: new SlashCommandBuilder()
