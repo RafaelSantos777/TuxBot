@@ -4,7 +4,6 @@ import ytdl from '@distube/ytdl-core';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { getClient } from './client.js';
 import { Track } from './types/track.js';
-import assert from 'assert';
 
 const guildTrackManagers: Map<string, TrackManager> = new Map();
 const youtubePlugin = new YouTubePlugin();
@@ -27,10 +26,10 @@ export function getTrackManager(guildId: string): TrackManager {
 // TODO Spotify, Deezer, and SoundCloud support (search on these platforms but play on YouTube)
 export class TrackManager {
 
-    readonly audioPlayer: AudioPlayer;
-    queue: Track[];
-    currentTrack: Track | null;
-    loopMode: LoopMode;
+    public readonly audioPlayer: AudioPlayer;
+    public queue: Track[];
+    public currentTrack: Track | null;
+    public loopMode: LoopMode;
     private isRetrying: boolean;
     private ffmpegProcess: ChildProcessWithoutNullStreams | null;
     private currentPlaybackSpeed: number;
@@ -42,7 +41,7 @@ export class TrackManager {
     private static readonly MAX_RETRY_ATTEMPTS = 3;
     private static readonly RETRY_DELAY_MILLISECONDS = 1500;
 
-    constructor() {
+    public constructor() {
         this.audioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
         this.queue = [];
         this.currentTrack = null;
@@ -75,19 +74,21 @@ export class TrackManager {
     private handleTrackTransition() {
         if (this.isRetrying)
             return;
-        const previousTrack = this.currentTrack;
+        const endedTrack = this.currentTrack;
         this.currentTrack = null;
+        if (endedTrack)
+            endedTrack.startTimeMilliseconds = 0;
         switch (this.loopMode) {
             case LoopMode.OFF:
                 this.play();
                 break;
             case LoopMode.TRACK:
-                if (previousTrack)
-                    this.playTrack(previousTrack);
+                if (endedTrack)
+                    this.playTrack(endedTrack);
                 break;
             case LoopMode.QUEUE:
-                if (previousTrack)
-                    this.queue.push(previousTrack);
+                if (endedTrack)
+                    this.queue.push(endedTrack);
                 this.play();
                 break;
         }
@@ -127,7 +128,7 @@ export class TrackManager {
         this.ffmpegProcess = null;
     }
 
-    private rebuildPlayback() {
+    private applyPlaybackParameters() {
         if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing)
             return;
         this.killFFmpegProcess();
@@ -163,7 +164,7 @@ export class TrackManager {
         return enqueuedTracks;
     }
 
-    async enqueueTrackOrPlaylist(query: string): Promise<Track | Track[]> {
+    public async enqueueTrackOrPlaylist(query: string): Promise<Track | Track[]> {
 
         async function searchYouTubeSong(): Promise<YouTubeSong> {
             const searchResults = await youtubePlugin.search(query, { type: SearchResultType.VIDEO, limit: 1, safeSearch: false });
@@ -194,7 +195,7 @@ export class TrackManager {
         return track;
     }
 
-    play(): boolean {
+    public play(): boolean {
         if (this.isQueueEmpty() || this.audioPlayer.state.status !== AudioPlayerStatus.Idle || this.isRetrying)
             return false;
         const track = this.queue.shift()!;
@@ -202,11 +203,11 @@ export class TrackManager {
         return true;
     }
 
-    skip(): boolean {
+    public skip(): boolean {
         return this.audioPlayer.stop();
     }
 
-    seek(seconds: number, method: 'forward' | 'rewind') {
+    public seek(seconds: number, method: 'forward' | 'rewind') {
         if (Number.isNaN(seconds) || seconds <= 0)
             throw new TrackManagerError('You must provide a positive number of seconds. ❌');
         if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing)
@@ -215,10 +216,10 @@ export class TrackManager {
         const variationMilliseconds = (method === 'forward' ? seconds : -seconds) * 1000;
         currentTrack.startTimeMilliseconds += this.audioPlayer.state.playbackDuration * this.currentPlaybackSpeed + variationMilliseconds;
         currentTrack.startTimeMilliseconds = Math.max(0, currentTrack.startTimeMilliseconds);
-        this.rebuildPlayback();
+        this.applyPlaybackParameters();
     }
 
-    setPlaybackSpeed(playbackSpeed: number) {
+    public setPlaybackSpeed(playbackSpeed: number) {
         if (Number.isNaN(playbackSpeed) || playbackSpeed < TrackManager.MIN_PLAYBACK_SPEED || playbackSpeed > TrackManager.MAX_PLAYBACK_SPEED)
             throw new TrackManagerError(`You must provide a number between ${TrackManager.MIN_PLAYBACK_SPEED} and ${TrackManager.MAX_PLAYBACK_SPEED}. ❌`);
         if (this.audioPlayer.state.status !== AudioPlayerStatus.Playing) {
@@ -227,24 +228,24 @@ export class TrackManager {
         }
         this.currentTrack!.startTimeMilliseconds += this.audioPlayer.state.playbackDuration * this.currentPlaybackSpeed;
         this.currentPlaybackSpeed = playbackSpeed;
-        this.rebuildPlayback();
+        this.applyPlaybackParameters();
     }
 
-    removeTrack(position: number): Track {
+    public removeTrack(position: number): Track {
         if (Number.isNaN(position) || position < 1 || position > this.queue.length)
             throw new TrackManagerError(`Invalid position: ${position}. ❌`);
         return this.queue.splice(position - 1, 1)[0];
     }
 
-    clearQueue() {
+    public clearQueue() {
         this.queue = [];
     }
 
-    isQueueEmpty(): boolean {
+    public isQueueEmpty(): boolean {
         return this.queue.length === 0;
     }
 
-    reset() {
+    public reset() {
         this.clearQueue();
         this.skip();
         this.currentTrack = null;
