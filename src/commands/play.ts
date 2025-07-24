@@ -4,7 +4,7 @@ import { extractCommandOptions } from '../prefix-manager.js';
 import { getTrackManager, TrackManagerError } from '../track-manager.js';
 import { Command, CommandContext } from '../types/command.js';
 import { getCommandContextUserVoiceChannel, joinVoiceChannel } from '../voice.js';
-import { hyperlinkTrack, pluralize } from '../utils.js';
+import { hyperlinkTrack, pluralize } from '../text-formatting.js';
 
 export default {
     data: new SlashCommandBuilder()

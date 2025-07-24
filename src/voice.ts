@@ -10,6 +10,10 @@ export function isInVoiceChannel(voiceChannel: VoiceChannel): boolean {
     return voiceChannel.members.has(getClient().user.id);
 }
 
+export function isAnyHumanInVoiceChannel(voiceChannel: VoiceChannel): boolean {
+    return voiceChannel.members.some(member => !member.user.bot);
+}
+
 export async function getCommandContextUserVoiceChannel(context: CommandContext): Promise<VoiceChannel | null> {
     const user = context instanceof Message ? context.author : context.user;
     const guildMember = await context.guild!.members.fetch(user.id);

@@ -1,4 +1,4 @@
-import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder } from 'discord.js';
+import { Client, Events, GatewayIntentBits, REST, Routes, SlashCommandBuilder, VoiceChannel } from 'discord.js';
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
@@ -6,6 +6,8 @@ import { pathToFileURL } from 'url';
 import { extractCommandName } from './prefix-manager.js';
 import { addTrackManager } from './track-manager.js';
 import { Command } from './types/command.js';
+import { isAnyHumanInVoiceChannel, isInVoiceChannel } from './voice.js';
+import { getVoiceConnection } from '@discordjs/voice';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
 const { BOT_TOKEN, APPLICATION_ID } = process.env as { BOT_TOKEN: string; APPLICATION_ID: string; };
@@ -74,6 +76,12 @@ export async function setupClient() {
                 } catch (error) {
                     console.error(error);
                 }
+            }
+        });
+        client.on(Events.VoiceStateUpdate, (oldState, _) => {
+            if (oldState.channel instanceof VoiceChannel && isInVoiceChannel(oldState.channel) && !isAnyHumanInVoiceChannel(oldState.channel)) {
+                const voiceConnection = getVoiceConnection(oldState.guild.id);
+                voiceConnection?.destroy();
             }
         });
         client.on(Events.GuildCreate, guild => { addTrackManager(guild.id); });

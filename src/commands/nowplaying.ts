@@ -1,7 +1,7 @@
 import { InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import { getTrackManager } from '../track-manager.js';
 import { Command, CommandContext } from '../types/command.js';
-import { hyperlinkTrack } from '../utils.js';
+import { hyperlinkTrack } from '../text-formatting.js';
 
 export default {
     data: new SlashCommandBuilder()

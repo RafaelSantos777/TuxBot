@@ -2,7 +2,7 @@ import { InteractionContextType, Message, SlashCommandBuilder } from 'discord.js
 import { extractCommandOptions } from '../prefix-manager.js';
 import { getTrackManager, TrackManagerError } from '../track-manager.js';
 import { Command, CommandContext } from '../types/command.js';
-import { pluralize } from '../utils.js';
+import { pluralize } from '../text-formatting.js';
 
 export default {
     data: new SlashCommandBuilder()

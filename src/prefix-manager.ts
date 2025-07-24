@@ -1,6 +1,6 @@
 
 import { Message } from 'discord.js';
-import fs from 'fs';
+import fileSystem from 'fs';
 import guildPrefixesJSON from '../data/guild-prefixes.json' with { type: 'json' };
 
 const PREFIX_REGEX = new RegExp(/^[\w/!?=+\-.,;:*#&^~%$@<>«»()\[\]{}]*$/);
@@ -22,7 +22,7 @@ export function setPrefix(guildId: string, prefix: string) {
 
     validatePrefix();
     guildPrefixes.set(guildId, prefix);
-    fs.writeFileSync('data/guild-prefixes.json', JSON.stringify(Object.fromEntries(guildPrefixes), null, 4));
+    fileSystem.writeFileSync('data/guild-prefixes.json', JSON.stringify(Object.fromEntries(guildPrefixes), null, 4));
 }
 
 export function extractCommandName(message: Message<true>): string | null {

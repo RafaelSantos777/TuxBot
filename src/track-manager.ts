@@ -23,7 +23,7 @@ export function getTrackManager(guildId: string): TrackManager {
     return trackManager;
 }
 
-// TODO Spotify, Deezer, and SoundCloud support (search on these platforms but play on YouTube)
+// TODO Spotify, Deezer, and SoundCloud support (perhaps search on these platforms but play on YouTube)
 export class TrackManager {
 
     public readonly audioPlayer: AudioPlayer;
@@ -74,21 +74,21 @@ export class TrackManager {
     private handleTrackTransition() {
         if (this.isRetrying)
             return;
-        const endedTrack = this.currentTrack;
+        const finishedTrack = this.currentTrack;
         this.currentTrack = null;
-        if (endedTrack)
-            endedTrack.startTimeMilliseconds = 0;
+        if (finishedTrack)
+            finishedTrack.startTimeMilliseconds = 0;
         switch (this.loopMode) {
             case LoopMode.OFF:
                 this.play();
                 break;
             case LoopMode.TRACK:
-                if (endedTrack)
-                    this.playTrack(endedTrack);
+                if (finishedTrack)
+                    this.playTrack(finishedTrack);
                 break;
             case LoopMode.QUEUE:
-                if (endedTrack)
-                    this.queue.push(endedTrack);
+                if (finishedTrack)
+                    this.queue.push(finishedTrack);
                 this.play();
                 break;
         }
@@ -154,14 +154,14 @@ export class TrackManager {
         this.audioPlayer.play(audioResource);
     }
 
-    private async enqueuePlaylist(youtubePlaylist: YouTubePlaylist<unknown>): Promise<Track[]> {
-        const enqueuedTracks = [];
+    private enqueuePlaylist(youtubePlaylist: YouTubePlaylist<unknown>): Track[] {
+        const addedTracks = [];
         for (const song of youtubePlaylist.songs) {
             const track = TrackManager.createTrack(song);
             this.queue.push(track);
-            enqueuedTracks.push(track);
+            addedTracks.push(track);
         }
-        return enqueuedTracks;
+        return addedTracks;
     }
 
     public async enqueueTrackOrPlaylist(query: string): Promise<Track | Track[]> {
@@ -189,7 +189,7 @@ export class TrackManager {
 
         const youtubeSongOrPlaylist = await resolveYouTubeSongOrPlaylist();
         if (youtubeSongOrPlaylist instanceof YouTubePlaylist)
-            return await this.enqueuePlaylist(youtubeSongOrPlaylist);
+            return this.enqueuePlaylist(youtubeSongOrPlaylist);
         const track = TrackManager.createTrack(youtubeSongOrPlaylist);
         this.queue.push(track);
         return track;

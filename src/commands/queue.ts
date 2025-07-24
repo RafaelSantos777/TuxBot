@@ -1,7 +1,7 @@
 import { bold, EmbedBuilder, inlineCode, InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import { getTrackManager } from '../track-manager.js';
 import { Command, CommandContext } from '../types/command.js';
-import { hyperlinkTrack, pluralize } from '../utils.js';
+import { hyperlinkTrack, pluralize } from '../text-formatting.js';
 
 const PAGE_SIZE = 10;
 
