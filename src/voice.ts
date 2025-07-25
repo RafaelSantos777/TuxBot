@@ -16,8 +16,8 @@ export async function getUserCurrentVoiceChannel(user: User, guild: Guild): Prom
 }
 
 export async function disconnectIfAlone(voiceState: VoiceState) {
-    const clientVoiceChannel = await getUserCurrentVoiceChannel(client.user!, voiceState.guild);
-    if (clientVoiceChannel && !isAnyHumanInVoiceChannel(clientVoiceChannel)) {
+    const voiceBasedChannel = voiceState.channel;
+    if (voiceBasedChannel instanceof VoiceChannel && isClientInVoiceChannel(voiceBasedChannel) && !isAnyHumanInVoiceChannel(voiceBasedChannel)) {
         const voiceConnection = getVoiceConnection(voiceState.guild.id);
         voiceConnection?.destroy();
     }

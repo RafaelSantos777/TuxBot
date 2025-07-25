@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
 import { Command } from './types/command.js';
-import { executeChatInputCommand, executeMessageCommand } from './command-execution.js';
+import { executeCommand } from './command.js';
 import { addTrackManager } from './track-manager.js';
 import { disconnectIfAlone } from './voice.js';
 
@@ -35,12 +35,12 @@ export async function setupClient() {
     function setupEventHandlers() {
         client.on(Events.InteractionCreate, (interaction) => {
             if (interaction.isChatInputCommand())
-                executeChatInputCommand(interaction);
+                executeCommand(interaction);
         });
 
         client.on(Events.MessageCreate, (message) => {
             if (message.inGuild() && !message.author.bot)
-                executeMessageCommand(message);
+                executeCommand(message);
         });
         client.on(Events.VoiceStateUpdate, disconnectIfAlone);
         client.on(Events.GuildCreate, addTrackManager);

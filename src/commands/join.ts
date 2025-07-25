@@ -2,6 +2,7 @@ import { ChannelType, InteractionContextType, Message, SlashCommandBuilder, Voic
 import { extractCommandOptions } from '../prefix-manager.js';
 import { Command, CommandContext } from '../types/command.js';
 import { getGuildVoiceChannelByName, getUserCurrentVoiceChannel, isClientInVoiceChannel, joinVoiceChannel } from '../voice.js';
+import { getUserFromContext } from '../command.js';
 
 export default {
 	data: new SlashCommandBuilder()
@@ -14,8 +15,7 @@ export default {
 			.setRequired(false)
 			.addChannelTypes(ChannelType.GuildVoice)),
 	async execute(context: CommandContext) { // FIXME Check permission to join (in /play too) // FIXME Ephemeral flags are deprecated
-		const user = context instanceof Message ? context.author : context.user;
-		const userVoiceChannel = await getUserCurrentVoiceChannel(user, context.guild!);
+		const userVoiceChannel = await getUserCurrentVoiceChannel(getUserFromContext(context), context.guild!);
 		const selectedVoiceChannel = context instanceof Message
 			? getGuildVoiceChannelByName(context.guild, extractCommandOptions(context))
 			: context.options.getChannel('channel') as VoiceChannel;
