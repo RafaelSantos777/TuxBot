@@ -1,13 +1,13 @@
 import { joinVoiceChannel as createVoiceConnection, entersState, getVoiceConnection, VoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
 import { Guild, Message, VoiceChannel } from 'discord.js';
-import { getClient } from './client.js';
+import { client } from './client.js';
 import { getTrackManager } from './track-manager.js';
 import { CommandContext } from './types/command.js';
 
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
 
 export function isInVoiceChannel(voiceChannel: VoiceChannel): boolean {
-    return voiceChannel.members.has(getClient().user.id);
+    return client.isReady() ? voiceChannel.members.has(client.user.id) : false;
 }
 
 export function isAnyHumanInVoiceChannel(voiceChannel: VoiceChannel): boolean {

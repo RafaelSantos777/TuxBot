@@ -2,14 +2,14 @@ import { AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource,
 import { SearchResultType, YouTubePlaylist, YouTubePlugin, YouTubeSong } from "@distube/youtube";
 import ytdl from '@distube/ytdl-core';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import { getClient } from './client.js';
+import { client } from './client.js';
 import { Track } from './types/track.js';
 
 const guildTrackManagers: Map<string, TrackManager> = new Map();
 const youtubePlugin = new YouTubePlugin();
 
 export function setupTrackManagers() {
-    getClient().guilds.cache.forEach(guild => addTrackManager(guild.id));
+    client.guilds.cache.forEach(guild => addTrackManager(guild.id));
 }
 
 export function addTrackManager(guildId: string) {
