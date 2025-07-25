@@ -4,7 +4,9 @@ import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
 import { Command } from './types/command.js';
-import { handleGuildCreate, handleInteractionCreate, handleMessageCreate, handleVoiceStateUpdate } from './event-handlers.js';
+import { executeChatInputCommand, executeMessageCommand } from './command-execution.js';
+import { addTrackManager } from './track-manager.js';
+import { disconnectIfAlone } from './voice.js';
 
 const COMMAND_FOLDER_PATH = path.join(import.meta.dirname, 'commands');
 const { BOT_TOKEN, APPLICATION_ID } = process.env as { BOT_TOKEN: string; APPLICATION_ID: string; };
@@ -20,7 +22,7 @@ export async function setupClient() {
             const command = (await import(fileURL.href)).default as Command;
             commandsData.push(command.data);
             commandMap.set(command.data.name, command);
-            for (const alias of command.aliases || [])
+            for (const alias of command.aliases ?? [])
                 commandMap.set(alias, command);
         }
     }
@@ -31,10 +33,17 @@ export async function setupClient() {
     }
 
     function setupEventHandlers() {
-        client.on(Events.InteractionCreate, interaction => handleInteractionCreate(interaction));
-        client.on(Events.MessageCreate, message => handleMessageCreate(message));
-        client.on(Events.VoiceStateUpdate, (oldState, newState) => handleVoiceStateUpdate(oldState, newState));
-        client.on(Events.GuildCreate, handleGuildCreate);
+        client.on(Events.InteractionCreate, (interaction) => {
+            if (interaction.isChatInputCommand())
+                executeChatInputCommand(interaction);
+        });
+
+        client.on(Events.MessageCreate, (message) => {
+            if (message.inGuild() && !message.author.bot)
+                executeMessageCommand(message);
+        });
+        client.on(Events.VoiceStateUpdate, disconnectIfAlone);
+        client.on(Events.GuildCreate, addTrackManager);
     }
 
     const commandsData: SlashCommandBuilder[] = [];
