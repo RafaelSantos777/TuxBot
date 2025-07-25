@@ -7,8 +7,8 @@ const PREFIX_REGEX = new RegExp(/^[\w/!?=+\-.,;:*#&^~%$@<>«»()\[\]{}]*$/);
 const MAX_PREFIX_LENGTH = 10;
 const guildPrefixes: Map<string, string> = new Map(Object.entries(guildPrefixesJSON));
 
-export function getPrefix(guildId: string): string | undefined {
-    return guildPrefixes.get(guildId);
+export function getPrefix(guildId: string): string | null {
+    return guildPrefixes.get(guildId) ?? null;
 }
 
 export function setPrefix(guildId: string, prefix: string) {

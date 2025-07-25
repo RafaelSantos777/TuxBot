@@ -1,7 +1,8 @@
 import { ChannelType, InteractionContextType, Message, SlashCommandBuilder, VoiceChannel } from 'discord.js';
 import { extractCommandOptions } from '../prefix-manager.js';
 import { Command, CommandContext } from '../types/command.js';
-import { getCommandContextUserVoiceChannel, getGuildVoiceChannelByName, isInVoiceChannel, joinVoiceChannel } from '../voice.js';
+import { getGuildVoiceChannelByName, getUserCurrentVoiceChannel, isClientInVoiceChannel, joinVoiceChannel } from '../voice.js';
+import { getUserFromContext } from '../command.js';
 
 export default {
 	data: new SlashCommandBuilder()
@@ -14,14 +15,14 @@ export default {
 			.setRequired(false)
 			.addChannelTypes(ChannelType.GuildVoice)),
 	async execute(context: CommandContext) { // FIXME Check permission to join (in /play too) // FIXME Ephemeral flags are deprecated
-		const userVoiceChannel = await getCommandContextUserVoiceChannel(context);
+		const userVoiceChannel = await getUserCurrentVoiceChannel(getUserFromContext(context), context.guild!);
 		const selectedVoiceChannel = context instanceof Message
 			? getGuildVoiceChannelByName(context.guild, extractCommandOptions(context))
 			: context.options.getChannel('channel') as VoiceChannel;
-		const voiceChannel = selectedVoiceChannel ? selectedVoiceChannel : userVoiceChannel;
+		const voiceChannel = selectedVoiceChannel ?? userVoiceChannel;
 		if (!voiceChannel)
 			return await context.reply({ content: 'You must be in a voice channel or select one. ❌', ephemeral: true });
-		if (isInVoiceChannel(voiceChannel))
+		if (isClientInVoiceChannel(voiceChannel))
 			return await context.reply({ content: `I'm already in ${voiceChannel}. ❌`, ephemeral: true });
 		joinVoiceChannel(voiceChannel);
 		await context.reply(`Joined ${voiceChannel}.`);

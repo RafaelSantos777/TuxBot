@@ -4,16 +4,17 @@ import ytdl from '@distube/ytdl-core';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { client } from './client.js';
 import { Track } from './types/track.js';
+import { Guild } from 'discord.js';
 
 const guildTrackManagers: Map<string, TrackManager> = new Map();
 const youtubePlugin = new YouTubePlugin();
 
 export function setupTrackManagers() {
-    client.guilds.cache.forEach(guild => addTrackManager(guild.id));
+    client.guilds.cache.forEach(addTrackManager);
 }
 
-export function addTrackManager(guildId: string) {
-    guildTrackManagers.set(guildId, new TrackManager());
+export function addTrackManager(guild: Guild) {
+    guildTrackManagers.set(guild.id, new TrackManager());
 }
 
 export function getTrackManager(guildId: string): TrackManager {

@@ -1,24 +1,30 @@
 import { joinVoiceChannel as createVoiceConnection, entersState, getVoiceConnection, VoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
-import { Guild, Message, VoiceChannel } from 'discord.js';
+import { Guild, User, VoiceChannel, VoiceState } from 'discord.js';
 import { client } from './client.js';
 import { getTrackManager } from './track-manager.js';
-import { CommandContext } from './types/command.js';
 
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
 
-export function isInVoiceChannel(voiceChannel: VoiceChannel): boolean {
-    return client.isReady() && voiceChannel.members.has(client.user!.id);
+export function isClientInVoiceChannel(voiceChannel: VoiceChannel): boolean {
+    return client.isReady() && voiceChannel.members.has(client.user.id);
 }
 
-export function isAnyHumanInVoiceChannel(voiceChannel: VoiceChannel): boolean {
-    return voiceChannel.members.some(member => !member.user.bot);
-}
-
-export async function getCommandContextUserVoiceChannel(context: CommandContext): Promise<VoiceChannel | null> {
-    const user = context instanceof Message ? context.author : context.user;
-    const guildMember = await context.guild!.members.fetch(user.id);
+export async function getUserCurrentVoiceChannel(user: User, guild: Guild): Promise<VoiceChannel | null> {
+    const guildMember = await guild.members.fetch(user.id);
     const voiceBasedChannel = guildMember.voice.channel;
     return voiceBasedChannel instanceof VoiceChannel ? voiceBasedChannel : null;
+}
+
+export async function disconnectIfAlone(voiceState: VoiceState) {
+    const voiceBasedChannel = voiceState.channel;
+    if (voiceBasedChannel instanceof VoiceChannel && isClientInVoiceChannel(voiceBasedChannel) && !isAnyHumanInVoiceChannel(voiceBasedChannel)) {
+        const voiceConnection = getVoiceConnection(voiceState.guild.id);
+        voiceConnection?.destroy();
+    }
+
+    function isAnyHumanInVoiceChannel(voiceChannel: VoiceChannel): boolean {
+        return voiceChannel.members.some(member => !member.user.bot);
+    }
 }
 
 export function getGuildVoiceChannelByName(guild: Guild, voiceChannelName: string): VoiceChannel | null {

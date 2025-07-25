@@ -1,6 +1,7 @@
 import { bold, Message, SlashCommandBuilder } from 'discord.js';
 import EMOJIS from '../../data/emojis.json' with { type: 'json' };
 import { Command, CommandContext } from '../types/command.js';
+import { getUserFromContext } from '../command.js';
 
 const BASE_DICK_SIZE_CENTIMETERS = 13.75;
 const MAX_EXTRA_DICK_SIZE_CENTIMETERS = 0.5;
@@ -17,7 +18,7 @@ export default {
 		.setName('dick')
 		.setDescription('Measures your dick.'),
 	async execute(context: CommandContext) {
-		const user = context instanceof Message ? context.author : context.user;
+		const user = getUserFromContext(context);
 		await context.reply(`${createDickReply(user.displayName)}`);
 	},
 } as Command;

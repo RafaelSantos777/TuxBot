@@ -1,15 +1,19 @@
-import { Guild, Interaction, Message, VoiceChannel, VoiceState } from 'discord.js';
+import { ChatInputCommandInteraction, Message } from 'discord.js';
 import { extractCommandName } from './prefix-manager.js';
-import { isInVoiceChannel, isAnyHumanInVoiceChannel } from './voice.js';
-import { getVoiceConnection } from '@discordjs/voice';
-import { addTrackManager } from './track-manager.js';
 import { commandMap } from './client.js';
+import { CommandContext } from './types/command.js';
 
 const COMMAND_ERROR_REPLY_OPTIONS = { content: 'There was an unexpected error while executing this command! ⚠️', ephemeral: true };
 
-export async function handleInteractionCreate(interaction: Interaction) {
-    if (!interaction.isChatInputCommand())
-        return;
+export function getUserFromContext(context: CommandContext) {
+    return context instanceof Message ? context.author : context.user;
+}
+
+export async function executeCommand(context: CommandContext) {
+    context instanceof Message ? await executeMessageCommand(context) : await executeChatInputCommand(context);
+}
+
+async function executeChatInputCommand(interaction: ChatInputCommandInteraction) {
     const command = commandMap.get(interaction.commandName);
     if (!command)
         return;
@@ -29,9 +33,7 @@ export async function handleInteractionCreate(interaction: Interaction) {
     }
 }
 
-export async function handleMessageCreate(message: Message) { // FIXME Check for permissions to send message to channel (this is different from replying to interactions)
-    if (!message.inGuild() || message.author.bot)
-        return;
+async function executeMessageCommand(message: Message<true>) { // FIXME Check for permissions to send message to channel (this is different from replying to interactions)
     const messageCommandName = extractCommandName(message);
     if (!messageCommandName)
         return;
@@ -48,15 +50,4 @@ export async function handleMessageCreate(message: Message) { // FIXME Check for
             console.error(error);
         }
     }
-}
-
-export function handleVoiceStateUpdate(oldState: VoiceState, _: VoiceState) {
-    if (oldState.channel instanceof VoiceChannel && isInVoiceChannel(oldState.channel) && !isAnyHumanInVoiceChannel(oldState.channel)) {
-        const voiceConnection = getVoiceConnection(oldState.guild.id);
-        voiceConnection?.destroy();
-    }
-}
-
-export function handleGuildCreate(guild: Guild) {
-    addTrackManager(guild.id);
 }

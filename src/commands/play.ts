@@ -3,8 +3,9 @@ import { InteractionContextType, Message, SlashCommandBuilder } from 'discord.js
 import { extractCommandOptions } from '../prefix-manager.js';
 import { getTrackManager, TrackManagerError } from '../track-manager.js';
 import { Command, CommandContext } from '../types/command.js';
-import { getCommandContextUserVoiceChannel, joinVoiceChannel } from '../voice.js';
+import { getUserCurrentVoiceChannel, joinVoiceChannel } from '../voice.js';
 import { hyperlinkTrack, pluralize } from '../text-formatting.js';
+import { getUserFromContext } from '../command.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -20,7 +21,7 @@ export default {
         const guildId = context.guildId!;
         const trackManager = getTrackManager(guildId);
         const voiceConnection = getVoiceConnection(guildId);
-        const userVoiceChannel = await getCommandContextUserVoiceChannel(context);
+        const userVoiceChannel = await getUserCurrentVoiceChannel(getUserFromContext(context), context.guild!);
         if (!voiceConnection && !userVoiceChannel)
             return await context.reply({ content: 'Either you or I must be in a voice channel. ❌', ephemeral: true });
         const query = context instanceof Message ? extractCommandOptions(context) : context.options.getString('query', true);
