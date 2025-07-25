@@ -7,7 +7,7 @@ import { CommandContext } from './types/command.js';
 const DISCONNECTION_TIMEOUT_MILLISECONDS = 3000;
 
 export function isInVoiceChannel(voiceChannel: VoiceChannel): boolean {
-    return client.isReady() ? voiceChannel.members.has(client.user.id) : false;
+    return client.isReady() && voiceChannel.members.has(client.user!.id);
 }
 
 export function isAnyHumanInVoiceChannel(voiceChannel: VoiceChannel): boolean {
