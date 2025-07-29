@@ -8,7 +8,7 @@ A feature-rich Discord music bot to play songs from YouTube videos.
 
 | Command             | Description                                          | Example                               |
 | ------------------- | ---------------------------------------------------- | ------------------------------------- |
-| `play` `p`       | Plays a track or adds a track/playlist to the queue.             | `/play Never Gonna Give You Up`         |
+| `play` `p`       | Plays a track or adds a track/playlist to the queue.             | `/play Never gonna give you up`         |
 | `skip` `s`            | Skips the current track.                   | `/skip`                              |
 | `join`            | Joins the selected voice channel. If none is selected, joins the voice channel you are currently in.                             | `/join` |
 | `leave`            | Leaves the voice channel.                             | `/leave`                             |
@@ -23,7 +23,7 @@ A feature-rich Discord music bot to play songs from YouTube videos.
 
 ### Other features
 
-* The bot supports both the modern slash commands and the classic prefixes. Use the `prefix` command to achieve this.
+* To interact with the bot, you may use either the modern slash commands and the classic prefixes. Use the `prefix` command to achieve this.
 * The bot will leave the voice channel automatically if alone.
 
 ## How To Install
