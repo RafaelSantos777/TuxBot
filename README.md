@@ -65,7 +65,7 @@ Follow these instructions to get a copy of the bot up and running on your local 
     npx tsc
     ```
 
-5.  **Start the bot** by running the compiled output file:
+5.  **Start the bot**:
     ```sh
     npm start
     ```
