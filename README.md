@@ -23,7 +23,7 @@ A feature-rich Discord music bot to play songs from YouTube videos.
 
 ### Other features
 
-* To interact with the bot, you may use either the modern slash commands and the classic prefixes. Use the `prefix` command to achieve this.
+* To interact with the bot, you may use either the modern slash commands and the classic prefixes. Use the `prefix` command to set the prefix.
 * The bot will leave the voice channel automatically if alone.
 
 ## How To Install
