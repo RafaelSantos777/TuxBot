@@ -14,6 +14,7 @@ A feature-rich Discord music bot to play songs from YouTube videos.
 | `leave`            | Leaves the voice channel.                             | `/leave`                             |
 | `nowplaying` `np` `now`            | Shows the track currently being played.                   | `/nowplaying`                              |
 | `queue` `q`            | Displays the queue.                   | `/queue`                              |
+| `clear`            | Clears the queue.                   | `/clear`                              |
 | `remove`           | Removes the track at the specified position from the queue.                   | `/remove 2`                              |
 | `loop`       | Sets the loop mode (off, track, or queue).             | `/loop queue`         |
 | `forward`       | Forwards the current track by the specified number of seconds.             | `/forward 30`         |
