@@ -10,7 +10,6 @@ async function main() {
     } catch (error) {
         console.error(error);
         await logout();
-        process.exit(1);
     }
 }
 
