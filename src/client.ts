@@ -37,7 +37,6 @@ export async function setupClient() {
             if (interaction.isChatInputCommand())
                 executeCommand(interaction);
         });
-
         client.on(Events.MessageCreate, (message) => {
             if (message.inGuild() && !message.author.bot)
                 executeCommand(message);

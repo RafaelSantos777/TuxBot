@@ -25,6 +25,7 @@ export function getTrackManager(guildId: string): TrackManager {
 }
 
 // TODO Spotify, Deezer, and SoundCloud support (perhaps search on these platforms but play on YouTube)
+// TODO Play audio files
 export class TrackManager {
 
     public readonly audioPlayer: AudioPlayer;

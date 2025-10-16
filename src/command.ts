@@ -3,7 +3,7 @@ import { extractCommandName } from './prefix-manager.js';
 import { commandMap } from './client.js';
 import { CommandContext } from './types/command.js';
 
-const COMMAND_ERROR_REPLY_OPTIONS = { content: 'There was an unexpected error while executing this command! ⚠️', ephemeral: true };
+const COMMAND_ERROR_REPLY_OPTIONS = { content: 'An unexpected error occurred while executing this command! ⚠️', ephemeral: true };
 
 export function getUserFromContext(context: CommandContext) {
     return context instanceof Message ? context.author : context.user;
