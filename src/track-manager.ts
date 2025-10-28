@@ -24,8 +24,6 @@ export function getTrackManager(guildId: string): TrackManager {
     return trackManager;
 }
 
-// TODO Spotify, Deezer, and SoundCloud support (perhaps search on these platforms but play on YouTube)
-// TODO Play audio files
 export class TrackManager {
 
     public readonly audioPlayer: AudioPlayer;
@@ -59,6 +57,8 @@ export class TrackManager {
             this.currentTrack = audioPlayer.resource.metadata as Track;
         });
         this.audioPlayer.on(AudioPlayerStatus.Idle, () => {
+            if (this.isRetrying)
+                return;
             this.killFFmpegProcess();
             this.handleTrackTransition();
         });
@@ -74,8 +74,6 @@ export class TrackManager {
     }
 
     private handleTrackTransition() {
-        if (this.isRetrying)
-            return;
         const finishedTrack = this.currentTrack;
         this.currentTrack = null;
         if (finishedTrack)
@@ -107,6 +105,10 @@ export class TrackManager {
             this.isRetrying = false;
             this.playTrack(track);
         }, TrackManager.RETRY_DELAY_MILLISECONDS);
+    }
+
+    private shouldSpawnFFmpegProcess(): boolean {
+        return this.currentPlaybackSpeed !== 1.0 || (this.currentTrack !== null && this.currentTrack.startTimeMilliseconds > 0); // TODO Review
     }
 
     private spawnFFmpegProcess(startTimeMilliseconds: number) {
@@ -150,9 +152,12 @@ export class TrackManager {
 
     private playTrack(track: Track) {
         const ytdlStream = ytdl(track.url, TrackManager.DOWNLOAD_OPTIONS);
-        this.spawnFFmpegProcess(track.startTimeMilliseconds);
-        ytdlStream.pipe(this.ffmpegProcess!.stdin);
-        const audioResource = createAudioResource(this.ffmpegProcess!.stdout, { metadata: track });
+        const shouldSpawnFFmpegProcess = this.shouldSpawnFFmpegProcess();
+        if (shouldSpawnFFmpegProcess) {
+            this.spawnFFmpegProcess(track.startTimeMilliseconds);
+            ytdlStream.pipe(this.ffmpegProcess!.stdin);
+        }
+        const audioResource = createAudioResource(shouldSpawnFFmpegProcess ? this.ffmpegProcess!.stdout : ytdlStream, { metadata: track });
         this.audioPlayer.play(audioResource);
     }
 
