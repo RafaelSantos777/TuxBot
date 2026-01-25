@@ -53,12 +53,15 @@ Follow these instructions to get a copy of the bot up and running on your local 
 
 3. **Configure the bot:**
 
-    * Create a new file in the project's root directory named `.env`.
+    * Create a new file in the project's root directory named `.env`:
+    ```sh
+    nano .env
+    ```
     * Add the following values (available in the [Discord Developer Portal](https://discord.com/developers/applications)) to the `.env` file:
-        ```env
+    ```env
       BOT_TOKEN = [YOUR_BOT_TOKEN]
       APPLICATION_ID = [YOUR_BOT_APPLICATION_ID]
-        ```
+    ```
 
 4. **Compile the TypeScript code** into JavaScript:
 
