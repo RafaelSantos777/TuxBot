@@ -34,6 +34,7 @@ Follow these instructions to get a copy of the bot up and running on your local 
 ### Prerequisites
 
 * **[Node.js](https://nodejs.org/)**
+* **[FFmpeg](https://ffmpeg.org/download.html)**
 * A **Discord Bot Application**. You can create one from the [Discord Developer Portal](https://discord.com/developers/applications).
 
 ### Installation
