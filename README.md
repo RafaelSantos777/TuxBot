@@ -55,7 +55,7 @@ Follow these instructions to get a copy of the bot up and running on your local 
 
     * Create a new file in the project's root directory named `.env`:
     ```sh
-    mkdir .env
+    nano .env
     ```
     * Add the following values (available in the [Discord Developer Portal](https://discord.com/developers/applications)) to the `.env` file:
     ```env
