@@ -1,4 +1,4 @@
-# Tux Bot 🎵
+# Tux Bot
 
 A feature-rich Discord music bot to play songs from YouTube videos.
 
